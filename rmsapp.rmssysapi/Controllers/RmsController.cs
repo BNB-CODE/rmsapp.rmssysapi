@@ -71,7 +71,7 @@ namespace rmsapp.rmssysapi.Controllers
         #endregion
 
         #region  Download Quiz Excel Template
-        [HttpPost("quiz/exportTemplate")]
+        [HttpGet("quiz/exportTemplate")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(QuizDetails))]
         [ProducesResponseType(400)]
@@ -94,6 +94,8 @@ namespace rmsapp.rmssysapi.Controllers
             }
         }
         #endregion
+
+        #region Get Invidiual Subject and Set Wise total Info
 
         [HttpGet("quiz/SubjectExpert/questions")]
         [MapToApiVersion("1.0")]
@@ -124,6 +126,10 @@ namespace rmsapp.rmssysapi.Controllers
             }
 
         }
+        #endregion
+
+        #region Get Subjectwise All Sets and Qestions Count with grid data
+
         [HttpGet("quiz/SubjectExpert/allquestions")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(SubjectDetails[]))]
@@ -152,6 +158,8 @@ namespace rmsapp.rmssysapi.Controllers
             }
 
         }
+        #endregion
+
         #region Get Candidate Questions
         [HttpGet("quiz/candidate/questions")]
         [MapToApiVersion("1.0")]
