@@ -9,8 +9,9 @@ namespace rmsapp.rmssysapi.service.DependentInterfaces
     {
         Task<int> GteLatestQuestionId(int setNumber, string subjectName);
         Task<bool> Add(IEnumerable<MasterQuiz> masterQuiz);
-
-        Task<List<MasterQuiz>> GetQuestions(int set, string subject);
+        Task<IEnumerable<MasterQuiz>> GetQuestions(int set, string subject);
+        Task<IEnumerable<MasterQuiz>> GetQuizDetails(string subject);
+        
         //Task<IEnumerable<MasterQuiz>> GetAllQuizDetails();
         //Task<bool> Update(MasterQuiz masterQuiz);
         //Task<bool> Delete(int questionId, int setNumber, string subjectName);

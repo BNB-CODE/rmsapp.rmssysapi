@@ -40,11 +40,27 @@ namespace rmsapp.rmssysapi.repository
         }
         #endregion
 
-        #region
-        public async Task<List<MasterQuiz>> GetQuestions(int set, string subject)
+        #region Get Questions
+        public async Task<IEnumerable<MasterQuiz>> GetQuestions(int set, string subject)
         {
                 var questions = await _dbContext.AssignmentMaster.Where(x => x.SetNumber == set && x.SubjectName == subject).ToListAsync();
                 return questions;               
+        }
+
+        #endregion
+        #region Get Questions By SubjectName
+        public async Task<IEnumerable<MasterQuiz>> GetQuizDetails(string subject)
+        {
+            List<MasterQuiz> questions = new List<MasterQuiz>();
+            if (!string.IsNullOrEmpty(subject))
+            {
+                questions = await _dbContext.AssignmentMaster.Where(x => x.SubjectName == subject).ToListAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                questions = await _dbContext.AssignmentMaster.ToListAsync().ConfigureAwait(false);
+            }
+            return questions;
         }
 
         #endregion

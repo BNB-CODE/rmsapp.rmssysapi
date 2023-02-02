@@ -91,7 +91,7 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
 
-        public async  Task<List<SubjectExpertQuestions>> GetSubjectExpertQuestions(int set, string subject)
+        public async  Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(int set, string subject)
         {
             try
             {
@@ -116,6 +116,39 @@ namespace rmsapp.rmssysapi.service.Impl
             catch (Exception ex)
             {
                 throw new Exception($"MasterQuizSerice::getCandidateAssignment:: Get Assignment failed {ex.Message}");
+            }
+
+        }
+        public async Task<IEnumerable<SubjectDetails>> GetQuizDetails(string subject)
+        {
+            try
+            {
+                var masterQuiz = await _masterQuizRepository.GetQuizDetails(subject).ConfigureAwait(false);
+                var result = (from x in masterQuiz
+                               group x by new
+                               {
+                                 x.SetNumber,
+                                 x.SubjectName,
+                                 } into g
+                                 select new SubjectDetails
+                                 {
+                                     SetNumber = g.Key.SetNumber,
+                                     SubjectName = g.Key.SubjectName,
+                                     TotalQuestionsCount = g.Count(),
+                                     CreatedBy= masterQuiz.Where(x=>x.SetNumber==g.Key.SetNumber && x.SubjectName==g.Key.SubjectName).Select(x=>x.CreatedBy).FirstOrDefault(),
+                                     UpdatedBy = masterQuiz.Where(x => x.SetNumber == g.Key.SetNumber && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedBy).LastOrDefault(),
+                                     CreatedDate = masterQuiz.Where(x => x.SetNumber == g.Key.SetNumber && x.SubjectName == g.Key.SubjectName).Select(x => x.CreatedDate).FirstOrDefault(),
+                                     UpdatedDate = masterQuiz.Where(x => x.SetNumber == g.Key.SetNumber && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedDate).LastOrDefault(),
+                                 }).ToList();
+                return result;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetQuizDetails:: Get QuizDetails failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetQuizDetails:: Get QuizDetails failed {ex.Message}");
             }
 
         }

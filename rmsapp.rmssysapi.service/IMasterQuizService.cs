@@ -11,7 +11,10 @@ namespace rmsapp.rmssysapi.service
         Task<bool> Add(int setNumber, string subjectName, IEnumerable<QuizDetails> masterQuiz);
         Task<List<CandidateQuestions>> GetCandidateAssignment(int set, string subject);
 
-        Task<List<SubjectExpertQuestions>> GetSubjectExpertQuestions(int set, string subject);
+        Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(int set, string subject);
+
+        Task<IEnumerable<SubjectDetails>> GetQuizDetails(string subject);
+
         //Task<IEnumerable<MasterQuiz>> GetAllQuizDetails();
         //Task<bool> Update(MasterQuiz masterQuiz);
         //Task<bool> Delete(int questionId,int setNumber,string subjectName);

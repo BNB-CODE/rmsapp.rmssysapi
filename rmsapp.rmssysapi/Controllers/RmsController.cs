@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml;
 using rmsapp.rmssysapi.service;
 using rmsapp.rmssysapi.service.Models;
 using System;
@@ -21,14 +20,14 @@ namespace rmsapp.rmssysapi.Controllers
         private readonly IMasterQuizService _masterQuizService;
         private readonly IExcelDataConversionService _excelDataConversionService;
         private readonly ITemplateDownloadService _templateDownloadService;
-        public RmsController(IMasterQuizService masterQuizService, IExcelDataConversionService excelDataConversionService, 
+        public RmsController(IMasterQuizService masterQuizService, IExcelDataConversionService excelDataConversionService,
             ITemplateDownloadService templateDownloadService)
         {
             _masterQuizService = masterQuizService;
             _excelDataConversionService = excelDataConversionService;
             _templateDownloadService = templateDownloadService;
         }
-              #region Upload/Save Quiz Excel
+        #region Upload/Save Quiz Excel
 
         [HttpPost("quiz/import")]
         [MapToApiVersion("1.0")]
@@ -44,7 +43,7 @@ namespace rmsapp.rmssysapi.Controllers
                 {
                     return BadRequest("Excel file is empty");
                 }
-               
+
                 if (!Path.GetExtension(formFile.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
                 {
                     return BadRequest("File extension Not supported");
@@ -70,8 +69,8 @@ namespace rmsapp.rmssysapi.Controllers
             }
         }
         #endregion
-              
-              #region  Download Quiz Excel Template
+
+        #region  Download Quiz Excel Template
         [HttpPost("quiz/exportTemplate")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(QuizDetails))]
@@ -86,7 +85,7 @@ namespace rmsapp.rmssysapi.Controllers
                 //var stream = _templateDownloadService.DownloadUnapprovedRepoTemplate();
                 //return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
                 var stream = _templateDownloadService.DownloadQuizTemplate();
-               string excelName = $"RMS Export Template - Quiz.xlsx";
+                string excelName = $"RMS Export Template - Quiz.xlsx";
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
             }
             catch (Exception ex)
@@ -96,34 +95,7 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
-        [HttpGet("quiz/getCandidateQuestions")]
-        [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(CandidateQuestions))]
-       // [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        public async Task<IActionResult> GetCandidateQuestions(int set, string subject)
-        {
-            try
-            {
-                if (subject != null)
-                {
-                    subject = subject.ToUpper();
-                }
-
-                var res =await _masterQuizService.GetCandidateAssignment(set, subject);
-
-                if (res[0] == null)
-                {
-                    return NoContent();
-                }
-                return Ok(res);
-            }
-            catch(Exception ex){
-                return StatusCode(500); 
-            }
-           
-        }
-        [HttpGet("quiz/getSubjectExpertQuestions")]
+        [HttpGet("quiz/SubjectExpert/questions")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions))]
         // [ProducesResponseType(400)]
@@ -132,18 +104,19 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                if (subject != null)
+                if (!string.IsNullOrEmpty(subject))
                 {
                     subject = subject.ToUpper();
                 }
 
-                var res = await _masterQuizService.GetSubjectExpertQuestions(set, subject);
+                var res = await _masterQuizService.GetMasterQuestions(set, subject);
 
-                if (res[0] == null)
+                if (res.Any())
                 {
-                    return NoContent();
+                    return Ok(res);
                 }
-                return Ok(res);
+                return NoContent();
+
             }
             catch (Exception ex)
             {
@@ -151,5 +124,63 @@ namespace rmsapp.rmssysapi.Controllers
             }
 
         }
+        [HttpGet("quiz/SubjectExpert/allquestions")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(SubjectDetails[]))]
+        // [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> GetSubjectExpertQuestions(string subject)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(subject))
+                {
+                    subject = subject.ToUpper();
+                }
+
+                var res = await _masterQuizService.GetQuizDetails(subject).ConfigureAwait(false);
+
+                if (res.Any())
+                {
+                    return Ok(res);
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+
+        }
+        #region Get Candidate Questions
+        [HttpGet("quiz/candidate/questions")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(CandidateQuestions))]
+        // [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> GetCandidateQuestions(int set, string subject)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(subject))
+                {
+                    subject = subject.ToUpper();
+                }
+
+                var res = await _masterQuizService.GetCandidateAssignment(set, subject);
+
+                if (res.Any())
+                {
+                    return Ok(res);
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+
+        }
+        #endregion
     }
 }
