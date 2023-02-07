@@ -1,7 +1,9 @@
-﻿using rmsapp.rmssysapi.service.DependentInterfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using rmsapp.rmssysapi.service.DependentInterfaces;
 using rmsapp.rmssysapi.service.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 

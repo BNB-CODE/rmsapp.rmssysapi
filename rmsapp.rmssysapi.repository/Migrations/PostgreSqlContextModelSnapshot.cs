@@ -198,7 +198,7 @@ namespace rmsapp.rmssysapi.repository.Migrations
 
                     b.HasKey("QuizId");
 
-                    b.ToTable("QuizSubmission");
+                    b.ToTable("QuizSubmissions");
                 });
 #pragma warning restore 612, 618
         }

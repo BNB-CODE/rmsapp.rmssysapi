@@ -272,15 +272,15 @@ namespace rmsapp.rmssysapi.Controllers
                     if (quizDetails != null)
                     {
                         List<QuizInfo> subMittedQuizInfo = quizSumissionRequest.Data?.Count() > 0 ? quizSumissionRequest.Data : new List<QuizInfo>();
-                        List<MasterQuiz> masterQuizzes = new List<MasterQuiz>();
+                        List<SubjectExpertQuestions> masterQuizzes = new List<SubjectExpertQuestions>();
                         List<QuizInfo> masterQuizInfo = new List<QuizInfo>();
                         foreach (var item in quizDetails.QuizSetList)
                         {
-                            List<MasterQuiz> quizzes = new List<MasterQuiz>();
-                            quizzes =(List<MasterQuiz>) await _masterQuizService.GetMasterQuestions(item.SetNumber, item.SubjectName).ConfigureAwait(false);
+                            List<SubjectExpertQuestions> quizzes = new List<SubjectExpertQuestions>();
+                            quizzes =(List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(item.SetNumber, item.SubjectName).ConfigureAwait(false);
                             if (quizzes?.Count>0)
                             {
-                                masterQuizzes.AddRange(masterQuizzes);
+                                masterQuizzes.AddRange(quizzes);
                             }
                         }
                         if (masterQuizzes?.Count > 0)

@@ -10,8 +10,8 @@ using rmsapp.rmssysapi.repository;
 namespace rmsapp.rmssysapi.repository.Migrations
 {
     [DbContext(typeof(PostgreSqlContext))]
-    [Migration("20230207121713_update2")]
-    partial class update2
+    [Migration("20230207150340_update")]
+    partial class update
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -200,7 +200,7 @@ namespace rmsapp.rmssysapi.repository.Migrations
 
                     b.HasKey("QuizId");
 
-                    b.ToTable("QuizSubmission");
+                    b.ToTable("QuizSubmissions");
                 });
 #pragma warning restore 612, 618
         }
