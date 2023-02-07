@@ -257,7 +257,7 @@ namespace rmsapp.rmssysapi.Controllers
         #region Submitt Quiz
         [HttpPost("quiz/interviewer/submitquiz")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(InterviewerQuizResponse))]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> SubmitQuiz(QuizSumissionRequest quizSumissionRequest)
