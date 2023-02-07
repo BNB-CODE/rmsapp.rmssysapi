@@ -33,7 +33,7 @@ namespace rmsapp.rmssysapi.service.Impl
                     quiz.SetNumber = setNumber;
                     quiz.SubjectName = (subjectName.Trim()).ToUpper();
                     quiz.Question = item.Question;
-                    quiz.QuestionType = item.QuestionType;
+                    quiz.QuestionType = ((item.QuestionType).Trim()).ToUpper();
                     quiz.QuestionOptions = !string.IsNullOrEmpty(item.QuestionOptions) ?((item.QuestionOptions).Split(',')).Select(t => t).ToArray():null; 
                     quiz.QuestionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
                     if (questionOptions.Length>0 && questionAnswers.Length>0)
