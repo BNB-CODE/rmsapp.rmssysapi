@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace rmsapp.rmssysapi.repository.Migrations
 {
-    public partial class initial : Migration
+    public partial class updated : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -52,6 +53,34 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 {
                     table.PrimaryKey("PK_Candidate", x => x.CandidateId);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Quizzes",
+                columns: table => new
+                {
+                    QuizId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    QuizSets = table.Column<string>(type: "jsonb", nullable: true),
+                    ConfirmationCode = table.Column<string>(type: "text", nullable: true),
+                    ConfirmationCodeExpiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    QuizSubmittedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LoginAttempts = table.Column<int>(type: "integer", nullable: false),
+                    LastLoggedIn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    MiddleName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Quizzes", x => x.QuizId);
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -61,6 +90,9 @@ namespace rmsapp.rmssysapi.repository.Migrations
 
             migrationBuilder.DropTable(
                 name: "Candidate");
+
+            migrationBuilder.DropTable(
+                name: "Quizzes");
         }
     }
 }

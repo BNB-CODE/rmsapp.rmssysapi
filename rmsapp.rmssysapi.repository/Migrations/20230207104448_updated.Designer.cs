@@ -10,8 +10,8 @@ using rmsapp.rmssysapi.repository;
 namespace rmsapp.rmssysapi.repository.Migrations
 {
     [DbContext(typeof(PostgreSqlContext))]
-    [Migration("20230201100040_initial")]
-    partial class initial
+    [Migration("20230207104448_updated")]
+    partial class updated
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -111,6 +111,66 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.HasKey("QuestionId", "SetNumber", "SubjectName");
 
                     b.ToTable("AssignmentMaster");
+                });
+
+            modelBuilder.Entity("rmsapp.rmssysapi.service.Models.Quiz", b =>
+                {
+                    b.Property<int>("QuizId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("ConfirmationCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ConfirmationCodeExpiration")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastLoggedIn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("LoginAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MiddleName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuizSets")
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("QuizSubmittedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("QuizId");
+
+                    b.ToTable("Quizzes");
                 });
 #pragma warning restore 612, 618
         }

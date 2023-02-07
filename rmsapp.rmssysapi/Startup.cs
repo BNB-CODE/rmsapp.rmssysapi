@@ -45,6 +45,10 @@ namespace rmsapp.rmssysapi
             services.AddDbContextPool<PostgreSqlContext>(options => options.UseNpgsql(Configuration.GetConnectionString("MyWebApiConection")));
             services.AddTransient<IMasterQuizService, MasterQuizService>();
             services.AddScoped<IMasterQuizRepository, MasterQuizRepository>();
+
+            services.AddTransient<IQuizService, QuizService>();
+            services.AddScoped<IQuizRepository, QuizRepository>();
+            
             services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddTransient<ICandidateService, CandidateService>();
             services.AddTransient<IExcelDataConversionService, ExcelDataConversionService>();
@@ -73,6 +77,10 @@ namespace rmsapp.rmssysapi
             {
                 c.IncludeXmlComments(XmlCommentsFilePath);
             });
+            #region Expiration code
+            var invitationCodeExpiry = this.Configuration.GetValue("InvitationCodeExpiryHours", 2);
+            AccountOptions.InvitationCodeDuration = TimeSpan.FromHours(invitationCodeExpiry);
+            #endregion
             //services.AddSwaggerDocument(config =>
             //{
             //    config.PostProcess = document =>

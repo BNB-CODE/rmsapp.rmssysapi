@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using rmsapp.rmssysapi.service;
 using rmsapp.rmssysapi.service.Models;
+using rmsapp.rmssysapi.service.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -20,12 +22,14 @@ namespace rmsapp.rmssysapi.Controllers
         private readonly IMasterQuizService _masterQuizService;
         private readonly IExcelDataConversionService _excelDataConversionService;
         private readonly ITemplateDownloadService _templateDownloadService;
+        private readonly IQuizService _quizService;
         public RmsController(IMasterQuizService masterQuizService, IExcelDataConversionService excelDataConversionService,
-            ITemplateDownloadService templateDownloadService)
+            ITemplateDownloadService templateDownloadService, IQuizService quizService)
         {
             _masterQuizService = masterQuizService;
             _excelDataConversionService = excelDataConversionService;
             _templateDownloadService = templateDownloadService;
+            _quizService = quizService;
         }
         #region Upload/Save Quiz Excel
 
@@ -190,5 +194,75 @@ namespace rmsapp.rmssysapi.Controllers
 
         }
         #endregion
+
+        #region
+        [HttpPost("quiz/interviewer/createquiz")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(InterviewerQuizResponse))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> Create(List<InterviewerQuizSet> interviewerQuizRequest)
+        {
+            InterviewerQuizResponse quizResponse = new InterviewerQuizResponse();
+
+            try
+            {
+                if (interviewerQuizRequest.Count>0)
+                {
+                    int maxQuestionId = await _quizService.GteLatestQuizId().ConfigureAwait(false);
+                    var (confirmationCode, confirmationCodeExpiration) =GetInvitationCode();
+                    Quiz quiz = new Quiz()
+                    {
+                        QuizId = maxQuestionId + 1,
+                        CreatedDate = DateTime.Now,
+                        IsActive = true,
+                        ConfirmationCode= confirmationCode,
+                        ConfirmationCodeExpiration = confirmationCodeExpiration,
+                        QuizSetList = interviewerQuizRequest
+                        //CreatedBy= Currentuser
+                    };
+                    var res = await _quizService.Add(quiz).ConfigureAwait(false);
+                    if (res)
+                    {
+                        var quizDetails = await _quizService.GteQuizDetails(quiz.QuizId).ConfigureAwait(false);
+                        if (quizResponse!=null)
+                        {
+                            quizResponse.QuizId = quizDetails.QuizId;
+                            quizResponse.QuizLink = quizDetails.ConfirmationCode;
+                            quizResponse.QuizLinkExpiresAt = quizDetails.ConfirmationCodeExpiration;
+                        }
+                        
+                        return Ok(quizResponse);
+                    }
+                    else
+                    {
+                        return NoContent();
+                    }
+                }
+                else
+                {
+                    return BadRequest("Please Add Quiz Details");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
+        private static (string, DateTime) GetInvitationCode() =>
+        GetConfirmationCode(AccountOptions.InvitationCodeDuration);
+        private static (string, DateTime) GetConfirmationCode(TimeSpan duration)
+        {
+            var (confirmationCode, confirmationCodeExpiration, _) =
+                    Secrets.Create(
+                        DateTime.Now.Add(duration));
+            confirmationCode = confirmationCode
+                .Replace('+', '_')
+                .Replace('/', '-')
+                .Replace('=', '!');
+            return (confirmationCode, confirmationCodeExpiration);
+        }
     }
 }
