@@ -48,6 +48,8 @@ namespace rmsapp.rmssysapi
 
             services.AddTransient<IQuizService, QuizService>();
             services.AddScoped<IQuizRepository, QuizRepository>();
+            services.AddTransient<IQuizSubmissionService, QuizSubmissionService>();
+            services.AddScoped<IQuizSubmissionRepository, QuizSubmissionRepository>();
             
             services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddTransient<ICandidateService, CandidateService>();

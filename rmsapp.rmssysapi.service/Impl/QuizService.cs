@@ -91,9 +91,9 @@ namespace rmsapp.rmssysapi.service.Impl
         }
         #endregion
         #region get Quiz info
-        public async Task<Quiz> GteQuizDetails(int quizId)
+        public async Task<Quiz> GetQuizDetails(int quizId)
         {
-            var quiz = await _quizRepository.GteQuizDetails(quizId).ConfigureAwait(false);
+            var quiz = await _quizRepository.GetQuizDetails(quizId).ConfigureAwait(false);
             return quiz;
         }
         #endregion

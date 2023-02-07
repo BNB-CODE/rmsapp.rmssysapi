@@ -12,6 +12,6 @@ namespace rmsapp.rmssysapi.service
         Task<bool> Add(Quiz quiz);
         Task<bool> UpdateUserInfo(Quiz quiz);
         Task<bool> UpdateQuizInfo(Quiz quiz);
-        Task<Quiz> GteQuizDetails(int quizId);
+        Task<Quiz> GetQuizDetails(int quizId);
     }
 }

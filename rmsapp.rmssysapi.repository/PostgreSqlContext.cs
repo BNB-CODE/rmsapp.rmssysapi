@@ -22,6 +22,7 @@ namespace rmsapp.rmssysapi.repository
         public DbSet<Candidate> Candidate { get; set; }
 
         public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<QuizSubmission> QuizSubmissions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.HasDefaultSchema(_tableConf.DATABASESCHEMA);
@@ -35,6 +36,18 @@ namespace rmsapp.rmssysapi.repository
             .HasKey(c => new { c.QuizId });
             modelBuilder.Entity<Quiz>()
                 .Property(x => x.QuizSets)
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<QuizSubmission>()
+            .HasKey(c => new { c.QuizId });
+            modelBuilder.Entity<Quiz>()
+                .Property(x => x.QuizSets)
+                .HasColumnType("jsonb");
+            modelBuilder.Entity<QuizSubmission>()
+                .Property(x => x.SubmittedAnswers)
+                .HasColumnType("jsonb");
+            modelBuilder.Entity<QuizSubmission>()
+                .Property(x => x.MasterAnswers)
                 .HasColumnType("jsonb");
         }
 

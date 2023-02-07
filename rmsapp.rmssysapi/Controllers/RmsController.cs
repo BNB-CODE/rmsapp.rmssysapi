@@ -23,13 +23,16 @@ namespace rmsapp.rmssysapi.Controllers
         private readonly IExcelDataConversionService _excelDataConversionService;
         private readonly ITemplateDownloadService _templateDownloadService;
         private readonly IQuizService _quizService;
+        private readonly IQuizSubmissionService _quizSubmissionService;
         public RmsController(IMasterQuizService masterQuizService, IExcelDataConversionService excelDataConversionService,
-            ITemplateDownloadService templateDownloadService, IQuizService quizService)
+            ITemplateDownloadService templateDownloadService, IQuizService quizService,
+            IQuizSubmissionService quizSubmissionService)
         {
             _masterQuizService = masterQuizService;
             _excelDataConversionService = excelDataConversionService;
             _templateDownloadService = templateDownloadService;
             _quizService = quizService;
+            _quizSubmissionService = quizSubmissionService;
         }
         #region Upload/Save Quiz Excel
 
@@ -195,13 +198,13 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
-        #region
+        #region Create Quiz
         [HttpPost("quiz/interviewer/createquiz")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(InterviewerQuizResponse))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Create(List<InterviewerQuizSet> interviewerQuizRequest)
+        public async Task<IActionResult> createquiz(List<InterviewerQuizSet> interviewerQuizRequest)
         {
             InterviewerQuizResponse quizResponse = new InterviewerQuizResponse();
 
@@ -224,7 +227,7 @@ namespace rmsapp.rmssysapi.Controllers
                     var res = await _quizService.Add(quiz).ConfigureAwait(false);
                     if (res)
                     {
-                        var quizDetails = await _quizService.GteQuizDetails(quiz.QuizId).ConfigureAwait(false);
+                        var quizDetails = await _quizService.GetQuizDetails(quiz.QuizId).ConfigureAwait(false);
                         if (quizResponse!=null)
                         {
                             quizResponse.QuizId = quizDetails.QuizId;
@@ -251,6 +254,85 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
+        #region Submitt Quiz
+        [HttpPost("quiz/interviewer/submitquiz")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(InterviewerQuizResponse))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> SubmitQuiz(QuizSumissionRequest quizSumissionRequest)
+        {
+            InterviewerQuizResponse quizResponse = new InterviewerQuizResponse();
+
+            try
+            {
+                if (quizSumissionRequest!=null)
+                {
+                    var quizDetails = await _quizService.GetQuizDetails(quizSumissionRequest.QuizId).ConfigureAwait(false);
+                    if (quizDetails != null)
+                    {
+                        List<QuizInfo> subMittedQuizInfo = quizSumissionRequest.Data?.Count() > 0 ? quizSumissionRequest.Data : new List<QuizInfo>();
+                        List<MasterQuiz> masterQuizzes = new List<MasterQuiz>();
+                        List<QuizInfo> masterQuizInfo = new List<QuizInfo>();
+                        foreach (var item in quizDetails.QuizSetList)
+                        {
+                            List<MasterQuiz> quizzes = new List<MasterQuiz>();
+                            quizzes =(List<MasterQuiz>) await _masterQuizService.GetMasterQuestions(item.SetNumber, item.SubjectName).ConfigureAwait(false);
+                            if (quizzes?.Count>0)
+                            {
+                                masterQuizzes.AddRange(masterQuizzes);
+                            }
+                        }
+                        if (masterQuizzes?.Count > 0)
+                        {
+                            masterQuizInfo = (from x in masterQuizzes
+                                              group x by new
+                                              {
+                                                  x.SetNumber,
+                                                  x.SubjectName,
+                                              } into g
+                                              select new QuizInfo
+                                              {
+                                                  SetNumber = g.Key.SetNumber,
+                                                  SubjectName = g.Key.SubjectName,
+                                                  quizAnswers= masterQuizzes.Where(x=>x.SetNumber== g.Key.SetNumber
+                                                               && x.SubjectName== g.Key.SubjectName).Select(k=>new QuizAnswer {
+                                                                   QuestionId=k.QuestionId,
+                                                                   QuestionType=k.QuestionType,
+                                                                   QuestionAnswers=k.QuestionAnswers,
+                                                                   QuestionAnswerIds=k.QuestionAnswersIds
+                                                               }).ToArray()
+                                              }).ToList();
+                        }
+                        QuizSubmission quiz = new QuizSubmission()
+                        {
+                            QuizId = quizDetails.QuizId,
+                            CandidateMailId =quizDetails.Email,
+                            IsActive = true,
+                            QuizSetList=quizDetails.QuizSetList,
+                            SubmittedAnswersInfo= subMittedQuizInfo,
+                            MasterAnswersInfo= masterQuizInfo
+                            //CreatedBy= Currentuser
+                        };
+                        var res = await _quizSubmissionService.Add(quiz).ConfigureAwait(false);
+                        if (res)
+                        {
+                            return Ok(quizResponse);
+                        }
+                    }
+                    return BadRequest("Please provide quid id Details");
+                }
+                else
+                {
+                    return BadRequest("Please Add Quiz Details");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
         private static (string, DateTime) GetInvitationCode() =>
         GetConfirmationCode(AccountOptions.InvitationCodeDuration);
         private static (string, DateTime) GetConfirmationCode(TimeSpan duration)

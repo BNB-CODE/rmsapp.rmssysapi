@@ -83,7 +83,7 @@ namespace rmsapp.rmssysapi.repository
         }
         #endregion
         #region get Quiz info
-        public async Task<Quiz> GteQuizDetails(int quizId){
+        public async Task<Quiz> GetQuizDetails(int quizId){
             Quiz quiz = new Quiz();
             if (quizId>0)
             {
