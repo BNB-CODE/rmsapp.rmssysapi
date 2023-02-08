@@ -255,7 +255,7 @@ namespace rmsapp.rmssysapi.Controllers
         #endregion
 
         #region Save User With Quiz
-        [HttpPost("quiz/interviewer/adduser")]
+        [HttpPost("quiz/candidate/adduser")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
         [ProducesResponseType(400)]
