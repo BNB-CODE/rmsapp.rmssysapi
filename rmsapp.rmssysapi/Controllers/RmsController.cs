@@ -170,7 +170,7 @@ namespace rmsapp.rmssysapi.Controllers
         #region Get Candidate Questions
         [HttpGet("quiz/candidate/questions")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(CandidateQuestions))]
+        [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
         // [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> GetCandidateQuestions(int set, string subject)
@@ -254,6 +254,77 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
+        #region Save User With Quiz
+        [HttpPost("quiz/interviewer/adduser")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> AddUser(int quizId,string confirmationCode,AddUserRequest interviewerQuizRequest)
+        {
+            List<CandidateQuestions> quizResponse = new List<CandidateQuestions>();
+
+            try
+            {
+                if (quizId>0 && interviewerQuizRequest != null)
+                {
+                    var quizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
+                    if (quizDetails == null)
+                    {
+                        return BadRequest("interview link not found");
+                    }
+                    else if (quizDetails.ConfirmationCodeExpiration.Value <= DateTime.UtcNow)
+                    {
+                        return BadRequest("interview link expired");
+                    }
+                    else if (quizDetails.QuizSubmittedAt!=null)
+                    {
+                        return BadRequest("interview already  submitted");
+                    }
+                    else if (quizDetails.ConfirmationCode != confirmationCode)
+                    {
+                        return BadRequest("invalid interview link");
+                    }
+
+                    if (quizDetails != null)
+                    {
+
+                        foreach (var item in quizDetails.QuizSetList)
+                        {
+                            List<CandidateQuestions> quizzes = new List<CandidateQuestions>();
+                            quizzes = (List<CandidateQuestions>)await _masterQuizService.GetCandidateAssignment(item.SetNumber, ((item.SubjectName).Trim()).ToUpper()).ConfigureAwait(false);
+                            if (quizzes?.Count > 0)
+                            {
+                                quizResponse.AddRange(quizzes);
+                            }
+                        }
+                        quizDetails.FirstName = interviewerQuizRequest.FirstName;
+                        quizDetails.MiddleName = interviewerQuizRequest.MiddleName;
+                        quizDetails.LastName = interviewerQuizRequest.LastName;
+                        quizDetails.Email = string.IsNullOrEmpty(interviewerQuizRequest.Email)?string.Empty: ((interviewerQuizRequest.Email).Trim()).ToUpper();
+                        quizDetails.Phone = interviewerQuizRequest.Phone;
+                        var res = await _quizService.UpdateUserInfo(quizDetails).ConfigureAwait(false);
+                        if (res)
+                        {
+
+                            return Ok(quizResponse);
+                        }
+                    }
+
+                   return BadRequest("please provide valid info");
+                }
+                else
+                {
+                    return BadRequest("Please Add Quiz Details");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
         #region Submitt Quiz
         [HttpPost("quiz/interviewer/submitquiz")]
         [MapToApiVersion("1.0")]
@@ -262,8 +333,6 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> SubmitQuiz(QuizSumissionRequest quizSumissionRequest)
         {
-            InterviewerQuizResponse quizResponse = new InterviewerQuizResponse();
-
             try
             {
                 if (quizSumissionRequest!=null)
@@ -307,17 +376,24 @@ namespace rmsapp.rmssysapi.Controllers
                         QuizSubmission quiz = new QuizSubmission()
                         {
                             QuizId = quizDetails.QuizId,
-                            CandidateMailId =quizDetails.Email,
+                            CandidateMailId = quizDetails.Email,
                             IsActive = true,
-                            QuizSetList=quizDetails.QuizSetList,
-                            SubmittedAnswersInfo= subMittedQuizInfo,
-                            MasterAnswersInfo= masterQuizInfo
+                            QuizSetList = quizDetails.QuizSetList,
+                            SubmittedAnswersInfo = subMittedQuizInfo,
+                            MasterAnswersInfo = masterQuizInfo,
+                            UpdatedDate = DateTime.Now
                             //CreatedBy= Currentuser
                         };
-                        var res = await _quizSubmissionService.Add(quiz).ConfigureAwait(false);
-                        if (res)
+                        quizDetails.QuizSubmittedAt = DateTime.Now;
+                        quizDetails.LastLoggedIn = DateTime.Now;
+                        quizDetails.LoginAttempts += 1;
+                        var quizsubmission =_quizSubmissionService.Add(quiz);
+                        var updateQuiz = _quizService.UpdateQuizInfo(quizDetails);
+                        await Task.WhenAll(quizsubmission, updateQuiz).ConfigureAwait(false);
+                        var quizsubmissionRes = quizsubmission.Result;
+                        if (quizsubmissionRes)
                         {
-                            return Ok(quizResponse);
+                            return Ok();
                         }
                     }
                     return BadRequest("Please provide quid id Details");
