@@ -10,8 +10,8 @@ using rmsapp.rmssysapi.repository;
 namespace rmsapp.rmssysapi.repository.Migrations
 {
     [DbContext(typeof(PostgreSqlContext))]
-    [Migration("20230207150340_update")]
-    partial class update
+    [Migration("20230210073750_candidatechanges")]
+    partial class candidatechanges
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,6 +38,9 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
+                    b.Property<int>("InterviewLevel")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -47,10 +50,10 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<string>("MiddleName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Skills")
+                    b.Property<string>("Phone")
                         .HasColumnType("text");
 
-                    b.Property<string>("SubjectName")
+                    b.Property<string>("Skills")
                         .HasColumnType("text");
 
                     b.Property<double>("TotalExperience")
@@ -120,6 +123,9 @@ namespace rmsapp.rmssysapi.repository.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+                    b.Property<string>("CandidateId")
+                        .HasColumnType("text");
+
                     b.Property<string>("ConfirmationCode")
                         .HasColumnType("text");
 
@@ -132,29 +138,14 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LastLoggedIn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
                     b.Property<int>("LoginAttempts")
                         .HasColumnType("integer");
-
-                    b.Property<string>("MiddleName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text");
 
                     b.Property<string>("QuizSets")
                         .HasColumnType("jsonb");

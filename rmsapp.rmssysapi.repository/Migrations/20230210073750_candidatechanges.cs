@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace rmsapp.rmssysapi.repository.Migrations
 {
-    public partial class update : Migration
+    public partial class candidatechanges : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -40,9 +40,10 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     MiddleName = table.Column<string>(type: "text", nullable: true),
                     LastName = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: true),
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    InterviewLevel = table.Column<int>(type: "integer", nullable: false),
                     Skills = table.Column<string>(type: "text", nullable: true),
                     TotalExperience = table.Column<double>(type: "double precision", nullable: false),
-                    SubjectName = table.Column<string>(type: "text", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -78,17 +79,13 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 {
                     QuizId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CandidateId = table.Column<string>(type: "text", nullable: true),
                     QuizSets = table.Column<string>(type: "jsonb", nullable: true),
                     ConfirmationCode = table.Column<string>(type: "text", nullable: true),
                     ConfirmationCodeExpiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     QuizSubmittedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     LoginAttempts = table.Column<int>(type: "integer", nullable: false),
                     LastLoggedIn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    FirstName = table.Column<string>(type: "text", nullable: true),
-                    MiddleName = table.Column<string>(type: "text", nullable: true),
-                    LastName = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Phone = table.Column<string>(type: "text", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),

@@ -24,15 +24,17 @@ namespace rmsapp.rmssysapi.Controllers
         private readonly ITemplateDownloadService _templateDownloadService;
         private readonly IQuizService _quizService;
         private readonly IQuizSubmissionService _quizSubmissionService;
+        private readonly ICandidateService _candidateService;
         public RmsController(IMasterQuizService masterQuizService, IExcelDataConversionService excelDataConversionService,
             ITemplateDownloadService templateDownloadService, IQuizService quizService,
-            IQuizSubmissionService quizSubmissionService)
+            IQuizSubmissionService quizSubmissionService, ICandidateService candidateService)
         {
             _masterQuizService = masterQuizService;
             _excelDataConversionService = excelDataConversionService;
             _templateDownloadService = templateDownloadService;
             _quizService = quizService;
             _quizSubmissionService = quizSubmissionService;
+            _candidateService = candidateService;
         }
         #region Upload/Save Quiz Excel
 
@@ -219,9 +221,10 @@ namespace rmsapp.rmssysapi.Controllers
                         QuizId = maxQuestionId + 1,
                         CreatedDate = DateTime.Now,
                         IsActive = true,
-                        ConfirmationCode= confirmationCode,
+                        ConfirmationCode = confirmationCode,
                         ConfirmationCodeExpiration = confirmationCodeExpiration,
-                        QuizSetList = interviewerQuizRequest
+                        QuizSetList = interviewerQuizRequest.Count > 0 ? interviewerQuizRequest.Select(x => new InterviewerQuizSet {
+                            SetNumber = x.SetNumber, SubjectName = x.SubjectName.Trim().ToUpper() }).ToList() : new List<InterviewerQuizSet>()
                         //CreatedBy= Currentuser
                     };
                     var res = await _quizService.Add(quiz).ConfigureAwait(false);
@@ -298,15 +301,22 @@ namespace rmsapp.rmssysapi.Controllers
                                 quizResponse.AddRange(quizzes);
                             }
                         }
-                        quizDetails.FirstName = interviewerQuizRequest.FirstName;
-                        quizDetails.MiddleName = interviewerQuizRequest.MiddleName;
-                        quizDetails.LastName = interviewerQuizRequest.LastName;
-                        quizDetails.Email = string.IsNullOrEmpty(interviewerQuizRequest.Email)?string.Empty: ((interviewerQuizRequest.Email).Trim()).ToUpper();
-                        quizDetails.Phone = interviewerQuizRequest.Phone;
-                        var res = await _quizService.UpdateUserInfo(quizDetails).ConfigureAwait(false);
+                        string candidateId= string.IsNullOrEmpty(interviewerQuizRequest.Email) ? string.Empty : ((interviewerQuizRequest.Email).Trim()).ToUpper();
+                        Candidate candidate = new Candidate {
+                            FirstName = interviewerQuizRequest.FirstName,
+                            MiddleName = interviewerQuizRequest.MiddleName,
+                            LastName = interviewerQuizRequest.LastName,
+                            Email = interviewerQuizRequest.Email,
+                            CandidateId = candidateId,
+                            Phone = interviewerQuizRequest.Phone,
+                            IsActive = true,
+                            CreatedDate = DateTime.Now
+                        };
+                        quizDetails.CandidateId = candidateId;
+                        var res = await _candidateService.AddUserInfo(candidate).ConfigureAwait(false);
+                        await _quizService.UpdateQuizInfo(quizDetails).ConfigureAwait(false);
                         if (res)
                         {
-
                             return Ok(quizResponse);
                         }
                     }
@@ -376,7 +386,7 @@ namespace rmsapp.rmssysapi.Controllers
                         QuizSubmission quiz = new QuizSubmission()
                         {
                             QuizId = quizDetails.QuizId,
-                            CandidateMailId = quizDetails.Email,
+                            CandidateMailId = quizDetails.CandidateId,
                             IsActive = true,
                             QuizSetList = quizDetails.QuizSetList,
                             SubmittedAnswersInfo = subMittedQuizInfo,
@@ -386,12 +396,10 @@ namespace rmsapp.rmssysapi.Controllers
                         };
                         quizDetails.QuizSubmittedAt = DateTime.Now;
                         quizDetails.LastLoggedIn = DateTime.Now;
-                        quizDetails.LoginAttempts += 1;
-                        var quizsubmission =_quizSubmissionService.Add(quiz);
-                        var updateQuiz = _quizService.UpdateQuizInfo(quizDetails);
-                        await Task.WhenAll(quizsubmission, updateQuiz).ConfigureAwait(false);
-                        var quizsubmissionRes = quizsubmission.Result;
-                        if (quizsubmissionRes)
+                        quizDetails.LoginAttempts = quizDetails.LoginAttempts+ 1;
+                        var quizsubmission =await _quizSubmissionService.Add(quiz).ConfigureAwait(false);
+                        await _quizService.UpdateQuizInfo(quizDetails).ConfigureAwait(false);
+                        if (quizsubmission)
                         {
                             return Ok();
                         }

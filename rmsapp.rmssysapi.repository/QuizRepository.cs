@@ -39,29 +39,6 @@ namespace rmsapp.rmssysapi.repository
             return result;
         }
         #endregion
-        #region Update User info
-        public async Task<bool> UpdateUserInfo(Quiz quiz)
-        {
-            bool result = false;
-            if (quiz != null)
-            {
-                Quiz existingQuiz = await _dbContext.Quizzes.Where(x=>x.QuizId==quiz.QuizId && x.ConfirmationCode==x.ConfirmationCode).SingleOrDefaultAsync();
-                if (existingQuiz != null)
-                {
-                    existingQuiz.FirstName = quiz.FirstName;
-                    existingQuiz.MiddleName = quiz.MiddleName;
-                    existingQuiz.LastName = quiz.LastName;
-                    existingQuiz.Email = string.IsNullOrEmpty(quiz.Email) ?null: ((quiz.Email).Trim()).ToUpper();
-                    existingQuiz.Phone = quiz.Phone;
-
-                    _dbContext.Quizzes.Update(existingQuiz);
-                    await _dbContext.SaveChangesAsync();
-                    result = true;
-                }
-            }
-            return result;
-        }
-        #endregion
         #region Update Quiz info
         public async Task<bool> UpdateQuizInfo(Quiz quiz)
         {
@@ -71,6 +48,7 @@ namespace rmsapp.rmssysapi.repository
                 Quiz existingQuiz = await _dbContext.Quizzes.Where(x => x.QuizId == quiz.QuizId).SingleOrDefaultAsync();
                 if (existingQuiz != null)
                 {
+                    existingQuiz.CandidateId = quiz.CandidateId;
                     existingQuiz.LoginAttempts = quiz.LoginAttempts;
                     existingQuiz.LastLoggedIn = quiz.LastLoggedIn;
                     existingQuiz.QuizSubmittedAt = quiz.QuizSubmittedAt;

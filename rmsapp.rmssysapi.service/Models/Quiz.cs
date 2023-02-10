@@ -11,6 +11,7 @@ namespace rmsapp.rmssysapi.service.Models
     {
         [Key]
         public int QuizId { get; set; }
+        public string CandidateId { get; set; }
         [Column(TypeName = "jsonb")]
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string QuizSets { get; set; }
@@ -56,15 +57,7 @@ namespace rmsapp.rmssysapi.service.Models
         /// Gets or sets the date/time when the user last logged in.
         /// </summary>
         public DateTime? LastLoggedIn { get; set; }
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public void Serialize()
-        {
-            
-        }
+
     }
 
 }

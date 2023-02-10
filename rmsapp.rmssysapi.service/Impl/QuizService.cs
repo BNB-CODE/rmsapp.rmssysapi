@@ -54,24 +54,6 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
         #endregion
-        #region Update User info
-        public async Task<bool> UpdateUserInfo(Quiz quiz)
-        {
-            try
-            {
-                var res = await _quizRepository.UpdateUserInfo(quiz).ConfigureAwait(false);
-                return res;
-            }
-            catch (NpgsqlException ex)
-            {
-                throw new Exception($"QuizService::UpdateUserInfo:: Update QuizSerice failed {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"QuizService::UpdateUserInfo:: Update QuizSerice failed {ex.Message}");
-            }
-        }
-        #endregion
         #region Update Quiz info
         public async Task<bool> UpdateQuizInfo(Quiz quiz)
         {
