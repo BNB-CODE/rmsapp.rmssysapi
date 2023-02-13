@@ -257,6 +257,53 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
+        #region Create Quiz
+        [HttpGet("quiz/candidate/checkquizid")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> checkquizid(int quizId, string confirmationCode)
+        {;
+
+            try
+            {
+                    if (quizId > 0 && !string.IsNullOrEmpty(confirmationCode))
+                    {
+                        var quizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
+                        if (quizDetails == null)
+                        {
+                            return BadRequest("interview link not found");
+                        }
+                        else if (quizDetails.ConfirmationCodeExpiration.Value <= DateTime.UtcNow)
+                        {
+                            return BadRequest("interview link expired");
+                        }
+                        else if (quizDetails.QuizSubmittedAt != null)
+                        {
+                            return BadRequest("interview already  submitted");
+                        }
+                        else if (quizDetails.ConfirmationCode != confirmationCode)
+                        {
+                            return BadRequest("invalid interview link");
+                        }
+                        else
+                        {
+                        return Ok();
+                        }
+                    }
+                    else
+                    {
+                    return BadRequest("Please provide valid quizId & confirmation code");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
         #region Save User With Quiz
         [HttpPost("quiz/candidate/adduser")]
         [MapToApiVersion("1.0")]
