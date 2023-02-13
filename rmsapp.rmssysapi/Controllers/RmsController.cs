@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using rmsapp.rmssysapi.service;
 using rmsapp.rmssysapi.service.Models;
 using rmsapp.rmssysapi.service.Utils;
@@ -25,9 +26,11 @@ namespace rmsapp.rmssysapi.Controllers
         private readonly IQuizService _quizService;
         private readonly IQuizSubmissionService _quizSubmissionService;
         private readonly ICandidateService _candidateService;
+        private readonly IConfiguration _configuration;
         public RmsController(IMasterQuizService masterQuizService, IExcelDataConversionService excelDataConversionService,
             ITemplateDownloadService templateDownloadService, IQuizService quizService,
-            IQuizSubmissionService quizSubmissionService, ICandidateService candidateService)
+            IQuizSubmissionService quizSubmissionService, ICandidateService candidateService,
+            IConfiguration configuration)
         {
             _masterQuizService = masterQuizService;
             _excelDataConversionService = excelDataConversionService;
@@ -35,6 +38,7 @@ namespace rmsapp.rmssysapi.Controllers
             _quizService = quizService;
             _quizSubmissionService = quizSubmissionService;
             _candidateService = candidateService;
+            _configuration = configuration;
         }
         #region Upload/Save Quiz Excel
 
@@ -257,7 +261,47 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
-        #region Create Quiz
+        #region check Quiz Code
+        [HttpGet("quiz/interviewer/quizdetails")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(QuizzInfoResponse[]))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> quizdetails()
+        {
+            List<QuizzInfoResponse> quizzInfoResponses = new List<QuizzInfoResponse>();
+            var quizUrl = _configuration.GetValue("QuizLink", "http://localhost:3000/rms-aug/test/");
+            try
+            {
+                List<Quiz> quizDetails = (List<Quiz>)await _quizService.GetTotalQuizDetails().ConfigureAwait(false);
+                if (quizDetails?.Count > 0)
+                {
+                    quizzInfoResponses = quizDetails.Select(x=>new QuizzInfoResponse {
+                                         QuizId=x.QuizId,
+                                         CandidateId=x.CandidateId,
+                                         QuizCodeExpirationAt=x.ConfirmationCodeExpiration!=null? (x.ConfirmationCodeExpiration)?.ToString("dd MMMM yyyy hh:mm tt") : null,//.ToString("dddd,dd MMMM yyyy hh:mm tt") 
+                        QuizSubmittedAt =x.QuizSubmittedAt != null ? (x.QuizSubmittedAt)?.ToString("dd MMMM yyyy hh:mm tt") : null,
+                                         LoginAttempts =x.LoginAttempts,
+                                         LastLoggedIn=x.LastLoggedIn != null ? (x.LastLoggedIn)?.ToString("dd MMMM yyyy hh:mm tt") : null,
+                                         Url = quizUrl+x.QuizId+"/"+x.ConfirmationCode
+                        //DateTime.Now.ToString("yyyyMMddHHmmss");
+                    }).ToList();
+
+                   return Ok(quizzInfoResponses);
+                }
+                else
+                {
+                    return NoContent();
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
+        #region check Quiz Code
         [HttpGet("quiz/candidate/checkquizid")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200)]

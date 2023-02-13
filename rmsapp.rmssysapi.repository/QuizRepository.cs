@@ -71,5 +71,13 @@ namespace rmsapp.rmssysapi.repository
         }
         #endregion
 
+        #region get Quizzes info
+        public async Task<IEnumerable<Quiz>> GetTotalQuizDetails()
+        {
+            List<Quiz> quiz = await _dbContext.Quizzes.Where(x=>x.IsActive).ToListAsync().ConfigureAwait(false);
+            return quiz;
+        }
+        #endregion
+
     }
 }

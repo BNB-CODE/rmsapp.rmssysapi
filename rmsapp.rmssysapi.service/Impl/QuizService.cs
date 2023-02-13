@@ -79,5 +79,12 @@ namespace rmsapp.rmssysapi.service.Impl
             return quiz;
         }
         #endregion
+        #region get Total Quiz Details info
+        public async Task<IEnumerable<Quiz>> GetTotalQuizDetails()
+        {
+            var quiz = await _quizRepository.GetTotalQuizDetails().ConfigureAwait(false);
+            return quiz;
+        }
+        #endregion
     }
 }

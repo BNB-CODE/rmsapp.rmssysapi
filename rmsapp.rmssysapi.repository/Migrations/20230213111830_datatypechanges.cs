@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace rmsapp.rmssysapi.repository.Migrations
 {
-    public partial class candidatechanges : Migration
+    public partial class datatypechanges : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
