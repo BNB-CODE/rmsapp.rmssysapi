@@ -54,5 +54,23 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
         #endregion
+        #region Get Total Quiz Detail
+        public async Task<IEnumerable<QuizSubmission>> GetTotalQuizDetails()
+        {
+            try
+            {
+                var res = await _quizSubmissionRepository.GetTotalQuizDetails().ConfigureAwait(false);
+                return res;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"QuizSubmissionService::GetTotalQuizDetails:: Fetch Submitted Quiz  failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"QuizSubmissionService::GetTotalQuizDetails:: Fetch Submitted Quiz  failed {ex.Message}");
+            }
+        }
+        #endregion
     }
 }

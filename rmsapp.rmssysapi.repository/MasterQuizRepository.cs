@@ -43,7 +43,7 @@ namespace rmsapp.rmssysapi.repository
         #region Get Questions
         public async Task<IEnumerable<MasterQuiz>> GetQuestions(int set, string subject)
         {
-                var questions = await _dbContext.AssignmentMaster.Where(x => x.SetNumber == set && x.SubjectName == subject).ToListAsync();
+                var questions = await _dbContext.AssignmentMaster.Where(x => x.SetNumber == set && x.SubjectName == subject && x.IsActive).ToListAsync();
                 return questions;               
         }
 
@@ -54,11 +54,11 @@ namespace rmsapp.rmssysapi.repository
             List<MasterQuiz> questions = new List<MasterQuiz>();
             if (!string.IsNullOrEmpty(subject))
             {
-                questions = await _dbContext.AssignmentMaster.Where(x => x.SubjectName == subject).ToListAsync().ConfigureAwait(false);
+                questions = await _dbContext.AssignmentMaster.Where(x => x.SubjectName == subject && x.IsActive).ToListAsync().ConfigureAwait(false);
             }
             else
             {
-                questions = await _dbContext.AssignmentMaster.ToListAsync().ConfigureAwait(false);
+                questions = await _dbContext.AssignmentMaster.Where(x=> x.IsActive).ToListAsync().ConfigureAwait(false);
             }
             return questions;
         }

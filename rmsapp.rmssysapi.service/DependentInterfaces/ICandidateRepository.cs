@@ -9,5 +9,6 @@ namespace rmsapp.rmssysapi.service.DependentInterfaces
     public interface ICandidateRepository
     {
         Task<bool> AddUserInfo(Candidate quiz);
+        Task<IEnumerable<Candidate>> GetTotalCandidateDetails();
     }
 }

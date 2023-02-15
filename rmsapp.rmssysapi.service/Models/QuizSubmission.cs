@@ -11,7 +11,7 @@ namespace rmsapp.rmssysapi.service.Models
     {
         [Key]
         public int QuizId { get; set; }
-        public string CandidateMailId { get; set; }
+        public string CandidateId { get; set; }
         [Column(TypeName = "jsonb")]
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string QuizSets { get; set; }
@@ -31,32 +31,22 @@ namespace rmsapp.rmssysapi.service.Models
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string SubmittedAnswers { get; set; }
         [NotMapped]
-        public List<QuizInfo> SubmittedAnswersInfo
+        public List<QuizAnswersDetailedInfo> SubmittedAnswersInfo
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<QuizInfo>>(SubmittedAnswers);
+                return JsonConvert.DeserializeObject<List<QuizAnswersDetailedInfo>>(SubmittedAnswers);
             }
             set
             {
                 SubmittedAnswers = JsonConvert.SerializeObject(value);
             }
         }
-        [Column(TypeName = "jsonb")]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string MasterAnswers { get; set; }
-        [NotMapped]
-        public List<QuizInfo> MasterAnswersInfo
-        {
-            get
-            {
-                return JsonConvert.DeserializeObject<List<QuizInfo>>(MasterAnswers);
-            }
-            set
-            {
-                MasterAnswers = JsonConvert.SerializeObject(value);
-            }
-        }
+        public int TotalQuestions { get; set; }
+        public int TotalAnsweredQuestions { get; set; }
+        public int TotalUnAnsweredQuestions { get; set; }
+        public int TotalCorrectAnswers { get; set; }
+        public int TotalInCorrectAnswers { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public bool IsActive { get; set; }
     }

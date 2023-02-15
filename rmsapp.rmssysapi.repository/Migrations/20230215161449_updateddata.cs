@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace rmsapp.rmssysapi.repository.Migrations
 {
-    public partial class datatypechanges : Migration
+    public partial class updateddata : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -61,10 +61,14 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 {
                     QuizId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CandidateMailId = table.Column<string>(type: "text", nullable: true),
+                    CandidateId = table.Column<string>(type: "text", nullable: true),
                     QuizSets = table.Column<string>(type: "jsonb", nullable: true),
                     SubmittedAnswers = table.Column<string>(type: "jsonb", nullable: true),
-                    MasterAnswers = table.Column<string>(type: "jsonb", nullable: true),
+                    TotalQuestions = table.Column<int>(type: "integer", nullable: false),
+                    TotalAnsweredQuestions = table.Column<int>(type: "integer", nullable: false),
+                    TotalUnAnsweredQuestions = table.Column<int>(type: "integer", nullable: false),
+                    TotalCorrectAnswers = table.Column<int>(type: "integer", nullable: false),
+                    TotalInCorrectAnswers = table.Column<int>(type: "integer", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },

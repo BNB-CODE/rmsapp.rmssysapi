@@ -1,5 +1,8 @@
-﻿using rmsapp.rmssysapi.service.DependentInterfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using rmsapp.rmssysapi.service.DependentInterfaces;
 using rmsapp.rmssysapi.service.Models;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace rmsapp.rmssysapi.repository
@@ -24,6 +27,13 @@ namespace rmsapp.rmssysapi.repository
               result = true;
             }
             return result;
+        }
+        #endregion
+        #region Get All Candidates
+        public async Task<IEnumerable<Candidate>> GetTotalCandidateDetails()
+        {
+            var candidates = await _dbContext.Candidate.Where(x=>x.IsActive).ToListAsync().ConfigureAwait(false);
+            return candidates;
         }
         #endregion
     }

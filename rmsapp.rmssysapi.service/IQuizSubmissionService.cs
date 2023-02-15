@@ -10,5 +10,6 @@ namespace rmsapp.rmssysapi.service
     {
         Task<bool> Add(QuizSubmission quiz);
         Task<QuizSubmission> GetQuizDetails(int quizId);
+        Task<IEnumerable<QuizSubmission>> GetTotalQuizDetails();
     }
 }

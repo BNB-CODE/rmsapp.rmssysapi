@@ -45,7 +45,7 @@ namespace rmsapp.rmssysapi.repository
             bool result = false;
             if (quiz != null)
             {
-                Quiz existingQuiz = await _dbContext.Quizzes.Where(x => x.QuizId == quiz.QuizId).SingleOrDefaultAsync();
+                Quiz existingQuiz = await _dbContext.Quizzes.Where(x => x.QuizId == quiz.QuizId && x.IsActive).SingleOrDefaultAsync();
                 if (existingQuiz != null)
                 {
                     existingQuiz.CandidateId = quiz.CandidateId;
@@ -65,7 +65,7 @@ namespace rmsapp.rmssysapi.repository
             Quiz quiz = new Quiz();
             if (quizId>0)
             {
-                quiz = await _dbContext.Quizzes.Where(x => x.QuizId == quizId).SingleOrDefaultAsync().ConfigureAwait(false);
+                quiz = await _dbContext.Quizzes.Where(x => x.QuizId == quizId && x.IsActive).SingleOrDefaultAsync().ConfigureAwait(false);
             }
             return quiz;
         }

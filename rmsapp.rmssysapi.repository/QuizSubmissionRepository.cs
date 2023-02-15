@@ -38,9 +38,17 @@ namespace rmsapp.rmssysapi.repository
             QuizSubmission quiz = new QuizSubmission();
             if (quizId > 0)
             {
-                quiz = await _dbContext.QuizSubmissions.Where(x => x.QuizId == quizId).SingleOrDefaultAsync().ConfigureAwait(false);
+                quiz = await _dbContext.QuizSubmissions.Where(x => x.QuizId == quizId && x.IsActive).SingleOrDefaultAsync().ConfigureAwait(false);
             }
             return quiz;
+
+        }
+        #endregion
+        #region Get Total Quizs Info
+        public async Task<IEnumerable<QuizSubmission>> GetTotalQuizDetails()
+        {
+            List<QuizSubmission> quizSubmissions = await _dbContext.QuizSubmissions.Where(x => x.IsActive).ToListAsync().ConfigureAwait(false);
+            return quizSubmissions;
 
         }
         #endregion

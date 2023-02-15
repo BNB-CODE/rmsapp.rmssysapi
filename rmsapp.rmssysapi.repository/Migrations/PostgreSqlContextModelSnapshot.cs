@@ -169,20 +169,32 @@ namespace rmsapp.rmssysapi.repository.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("CandidateMailId")
+                    b.Property<string>("CandidateId")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("MasterAnswers")
-                        .HasColumnType("jsonb");
 
                     b.Property<string>("QuizSets")
                         .HasColumnType("jsonb");
 
                     b.Property<string>("SubmittedAnswers")
                         .HasColumnType("jsonb");
+
+                    b.Property<int>("TotalAnsweredQuestions")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalCorrectAnswers")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalInCorrectAnswers")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalQuestions")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalUnAnsweredQuestions")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp without time zone");

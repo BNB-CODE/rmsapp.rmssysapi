@@ -46,9 +46,6 @@ namespace rmsapp.rmssysapi.repository
             modelBuilder.Entity<QuizSubmission>()
                 .Property(x => x.SubmittedAnswers)
                 .HasColumnType("jsonb");
-            modelBuilder.Entity<QuizSubmission>()
-                .Property(x => x.MasterAnswers)
-                .HasColumnType("jsonb");
         }
 
         public override int SaveChanges()
