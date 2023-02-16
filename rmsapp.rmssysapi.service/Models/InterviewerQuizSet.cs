@@ -7,6 +7,6 @@ namespace rmsapp.rmssysapi.service.Models
     {
         public int SetNumber { get; set; }
         public string SubjectName { get; set; }
-        public int TotalQuestions { get; set; }
+        public int TotalQuestionsCount { get; set; }
     }
 }

@@ -10,8 +10,8 @@ using rmsapp.rmssysapi.repository;
 namespace rmsapp.rmssysapi.repository.Migrations
 {
     [DbContext(typeof(PostgreSqlContext))]
-    [Migration("20230215161449_updateddata")]
-    partial class updateddata
+    [Migration("20230216034109_changes")]
+    partial class changes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

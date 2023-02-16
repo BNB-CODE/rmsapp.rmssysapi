@@ -228,7 +228,7 @@ namespace rmsapp.rmssysapi.Controllers
                         ConfirmationCode = confirmationCode,
                         ConfirmationCodeExpiration = confirmationCodeExpiration,
                         QuizSetList = interviewerQuizRequest.Count > 0 ? interviewerQuizRequest.Select(x => new InterviewerQuizSet {
-                            SetNumber = x.SetNumber, SubjectName = x.SubjectName.Trim().ToUpper(),TotalQuestions=x.TotalQuestions }).ToList() : new List<InterviewerQuizSet>()
+                            SetNumber = x.SetNumber, SubjectName = x.SubjectName.Trim().ToUpper(),TotalQuestionsCount=x.TotalQuestionsCount }).ToList() : new List<InterviewerQuizSet>()
                         //CreatedBy= Currentuser
                     };
                     var res = await _quizService.Add(quiz).ConfigureAwait(false);
@@ -443,7 +443,6 @@ namespace rmsapp.rmssysapi.Controllers
                     {
                         List<QuizInfo> subMittedQuizInfo = quizSumissionRequest.Data?.Count() > 0 ? quizSumissionRequest.Data : new List<QuizInfo>();
                         List<SubjectExpertQuestions> masterQuizzes = new List<SubjectExpertQuestions>();
-                        List<QuizAnswersDetailedInfo> clubedAnswers = new List<QuizAnswersDetailedInfo>();
                         List<QuizAnswersDetailedInfo> submittedAnswers = new List<QuizAnswersDetailedInfo>();
                         foreach (var item in quizDetails.QuizSetList)
                         {
@@ -454,48 +453,38 @@ namespace rmsapp.rmssysapi.Controllers
                                 masterQuizzes.AddRange(quizzes);
                             }
                         }
-                        if (masterQuizzes?.Count > 0)
+                        if (masterQuizzes?.Count > 0 && subMittedQuizInfo?.Count>0)
                         {
-                            clubedAnswers = (from x in masterQuizzes
-                                             group x by new
-                                             {
-                                                 x.SetNumber,
-                                                 x.SubjectName
-                                             } into g
-                                             select new QuizAnswersDetailedInfo
-                                             {
-                                                 SetNumber = g.Key.SetNumber,
-                                                 SubjectName = g.Key.SubjectName,
-                                                 QuizAnswersDetails = g.GroupBy(k => new { k.QuestionId, k.QuestionType })
-                                                                .Select(M => new QuizAnswerTotalDetails
-                                                                {
-                                                                    QuestionId = M.Key.QuestionId,
-                                                                    QuestionType = M.Key.QuestionType,
-                                                                    MasterQuestionAnswerIds = masterQuizzes.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber && x.QuestionId == M.Key.QuestionId && x.QuestionType == M.Key.QuestionType).SelectMany(x => x.QuestionAnswersIds).ToArray(),
-                                                                    MasterQuestionAnswers = masterQuizzes.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber && x.QuestionId == M.Key.QuestionId && x.QuestionType == M.Key.QuestionType).SelectMany(x => x.QuestionAnswers).ToArray(),
-                                                                    SubmittedQuestionAnswerIds= subMittedQuizInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x=>x.quizAnswers).Where(x=>x.QuestionId==M.Key.QuestionId && x.QuestionType==M.Key.QuestionType).SelectMany(x=>x.QuestionAnswerIds).ToArray(),
-                                                                    SubmittedQuestionAnswers = subMittedQuizInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.quizAnswers).Where(x => x.QuestionId == M.Key.QuestionId && x.QuestionType == M.Key.QuestionType).SelectMany(x => x.QuestionAnswers).ToArray(),
-                                                                    IsCorrect= checkEquality(masterQuizzes.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber && x.QuestionId == M.Key.QuestionId && x.QuestionType == M.Key.QuestionType).SelectMany(x => x.QuestionAnswersIds).ToArray(),subMittedQuizInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.quizAnswers).Where(x => x.QuestionId == M.Key.QuestionId && x.QuestionType == M.Key.QuestionType).SelectMany(x => x.QuestionAnswerIds).ToArray())
-                                                                }).ToArray()
-                                             }).ToList();
-                            submittedAnswers = (from x in clubedAnswers
-                                                group x by new
-                                                {
-                                                    x.SetNumber,
-                                                    x.SubjectName,
-                                                    x.QuizAnswersDetails
-                                                } into g
-                                                select new QuizAnswersDetailedInfo
-                                                {
-                                                    SetNumber = g.Key.SetNumber,
-                                                    SubjectName = g.Key.SubjectName,
-                                                    QuizAnswersDetails = g.Key.QuizAnswersDetails,
-                                                    TotalQuestions= g.Key.QuizAnswersDetails.Count(),
-                                                    TotalAnsweredQuestions = g.Key.QuizAnswersDetails.Where(x=>x?.SubmittedQuestionAnswers.Count() != 0 && x?.SubmittedQuestionAnswerIds.Count() != 0).Count(),
-                                                    TotalUnAnsweredQuestions = g.Key.QuizAnswersDetails.Where(x => x?.SubmittedQuestionAnswers.Count()==0 && x?.SubmittedQuestionAnswerIds.Count()==0).Count(),
-                                                    TotalCorrectAnswers= g.Key.QuizAnswersDetails.Where(x=>x.IsCorrect).Count(),
-                                                    TotalInCorrectAnswers = g.Key.QuizAnswersDetails.Where(x => x.IsCorrect=false).Count(),
-                                                }).ToList();
+                            foreach (var quizInfo in subMittedQuizInfo)
+                            {
+                                QuizAnswersDetailedInfo answersDetailedInfo = new QuizAnswersDetailedInfo();
+                                List<QuizAnswer> subjectWiseSetDetails = quizInfo.quizAnswers.ToList();
+                                answersDetailedInfo.SetNumber = quizInfo.SetNumber;
+                                answersDetailedInfo.SubjectName = quizInfo.SubjectName;
+                                answersDetailedInfo.TotalQuestions = subjectWiseSetDetails.Count();
+                                answersDetailedInfo.TotalAnsweredQuestions = subjectWiseSetDetails.Where(x=>x.QuestionAnswerIds.Count()>0 && x.QuestionAnswers.Count()>0).Count();
+                                answersDetailedInfo.TotalUnAnsweredQuestions = subjectWiseSetDetails.Where(x => x.QuestionAnswerIds.Count() == 0 && x.QuestionAnswers.Count() == 0).Count();
+                                List<QuizAnswerTotalDetails> quizAnswerTotalDetails = new List<QuizAnswerTotalDetails>();
+                                foreach (QuizAnswer quizAnswer in  subjectWiseSetDetails)
+                                {
+                                    QuizAnswerTotalDetails details = new QuizAnswerTotalDetails();
+                                    details.QuestionId = quizAnswer.QuestionId;
+                                    details.QuestionType = quizAnswer.QuestionType;
+                                    details.SubmittedQuestionAnswerIds = quizAnswer.QuestionAnswerIds;
+                                    details.SubmittedQuestionAnswers = quizAnswer.QuestionAnswers;
+
+                                    details.MasterQuestionAnswerIds = masterQuizzes.Where(x => x.SetNumber == quizInfo.SetNumber && x.SubjectName == quizInfo.SubjectName
+                                           && x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswersIds).ToArray();
+                                    details.MasterQuestionAnswers = masterQuizzes.Where(x => x.SetNumber == quizInfo.SetNumber && x.SubjectName == quizInfo.SubjectName
+                                           && x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswers).ToArray();
+                                    details.IsCorrect = CheckArrayAnswers(details.MasterQuestionAnswerIds, details.SubmittedQuestionAnswerIds);
+                                    quizAnswerTotalDetails.Add(details);
+                                }
+                                answersDetailedInfo.QuizAnswersDetails = quizAnswerTotalDetails.ToArray();
+                                answersDetailedInfo.TotalCorrectAnswers = quizAnswerTotalDetails.Where(x => x.IsCorrect).ToList().Count();
+                                answersDetailedInfo.TotalInCorrectAnswers = quizAnswerTotalDetails.Where(x => !x.IsCorrect).ToList().Count();
+                                submittedAnswers.Add(answersDetailedInfo);
+                            }
                         }
                         QuizSubmission quiz = new QuizSubmission()
                         {
@@ -671,7 +660,7 @@ namespace rmsapp.rmssysapi.Controllers
             return (confirmationCode, confirmationCodeExpiration);
         }
 
-        private static bool checkEquality<T>(T[] first, T[] second)
+        private static bool CheckArrayAnswers<T>(T[] first, T[] second)
         {
             if (ReferenceEquals(first, second))
             {
