@@ -580,7 +580,10 @@ namespace rmsapp.rmssysapi.Controllers
                                                       MasterQuestionAnswers = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
                                                                        .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswers).ToArray(),
                                                       MasterQuestionAnswersIds = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
-                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswerIds).ToArray()
+                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswerIds).ToArray(),
+                                                      IsCorrect= submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
+                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).Select(x=>x.IsCorrect).SingleOrDefault()
+
 
 
                                                   }).ToList();
@@ -628,7 +631,7 @@ namespace rmsapp.rmssysapi.Controllers
                                               {
                                                   QuizId = g.Key.QuizId,
                                                   CandidateId = g.Key.CandidateId,
-                                                  QuizSetList = g.Key.QuizSetList,
+                                                  //QuizSetList = g.Key.QuizSetList,
                                                   CreatedDate = (totalQuizDetails.Where(x => x.QuizId == g.Key.QuizId).Select(x => x.CreatedDate).SingleOrDefault())?.ToString("dd MMMM yyyy hh:mm tt"),
                                                   InterviewLevel = totalCandidates.Where(x => x.CandidateId == g.Key.CandidateId).Select(x => x.InterviewLevel).SingleOrDefault(),
                                                   //TotalQuestions= g.Key.SubmittedAnswersInfo.SelectMany(x=>x.)
@@ -672,16 +675,11 @@ namespace rmsapp.rmssysapi.Controllers
             {
                 return false;
             }
-
-            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-            for (int i = 0; i < first.Length; i++)
+            if (first.Length == second.Length)
             {
-                if (!comparer.Equals(first[i], second[i]))
-                {
-                    return false;
-                }
+                var isEqual=new HashSet<T> (first).SetEquals(second);
+                return isEqual;
             }
-
             return true;
         }
     }

@@ -4,10 +4,6 @@ using System.Text;
 
 namespace rmsapp.rmssysapi.service.Models
 {
-    public class SubmittedQuiz
-    {
-       public List<SubmittedAnswersResponse> Data { get; set; }
-    }
     public class SubmittedAnswersResponse
     {
     public int QuestionId { get; set; }
@@ -20,5 +16,6 @@ namespace rmsapp.rmssysapi.service.Models
     public string[] SubmittedAnswersIds { get; set; }
     public string[] MasterQuestionAnswers { get; set; }
     public string[] MasterQuestionAnswersIds { get; set; }
-}
+    public bool IsCorrect { get; set; }
+    }
 }
