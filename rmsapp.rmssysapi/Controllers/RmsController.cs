@@ -470,7 +470,7 @@ namespace rmsapp.rmssysapi.Controllers
                                     QuizAnswerTotalDetails details = new QuizAnswerTotalDetails();
                                     details.QuestionId = quizAnswer.QuestionId;
                                     details.QuestionType = quizAnswer.QuestionType;
-                                    details.SubmittedQuestionAnswerIds = quizAnswer.QuestionAnswerIds;
+                                    details.SubmittedQuestionAnswerIds = quizAnswer.QuestionAnswerIds.OrderBy(x => x).ToArray();
                                     details.SubmittedQuestionAnswers = quizAnswer.QuestionAnswers;
 
                                     details.MasterQuestionAnswerIds = masterQuizzes.Where(x => x.SetNumber == quizInfo.SetNumber && x.SubjectName == quizInfo.SubjectName
@@ -581,7 +581,7 @@ namespace rmsapp.rmssysapi.Controllers
                                                                        .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswers).ToArray(),
                                                       MasterQuestionAnswersIds = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
                                                                        .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswerIds).ToArray(),
-                                                      IsCorrect= submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
+                                                      IsCorrect = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
                                                                        .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).Select(x=>x.IsCorrect).SingleOrDefault()
 
 
@@ -625,17 +625,24 @@ namespace rmsapp.rmssysapi.Controllers
                                                   x.QuizId,
                                                   x.CandidateId,
                                                   x.QuizSetList,
-                                                  x.SubmittedAnswersInfo
+                                                  x.TotalQuestions,
+                                                  x.TotalAnsweredQuestions,
+                                                  x.TotalUnAnsweredQuestions,
+                                                  x.TotalCorrectAnswers,
+                                                  x.TotalInCorrectAnswers
                                               } into g
                                               select new SubmittedQuizResponse
                                               {
                                                   QuizId = g.Key.QuizId,
                                                   CandidateId = g.Key.CandidateId,
-                                                  //QuizSetList = g.Key.QuizSetList,
                                                   CreatedDate = (totalQuizDetails.Where(x => x.QuizId == g.Key.QuizId).Select(x => x.CreatedDate).SingleOrDefault())?.ToString("dd MMMM yyyy hh:mm tt"),
                                                   InterviewLevel = totalCandidates.Where(x => x.CandidateId == g.Key.CandidateId).Select(x => x.InterviewLevel).SingleOrDefault(),
-                                                  //TotalQuestions= g.Key.SubmittedAnswersInfo.SelectMany(x=>x.)
                                                   //CreatedBy= totalQuizDetails.Where(x => x.QuizId == g.Key.QuizId).Select(x => x.CreatedBy).SingleOrDefault(),
+                                                  TotalQuestions= g.Key.TotalQuestions,
+                                                  AnsweredQuestions = g.Key.TotalAnsweredQuestions,
+                                                  NotAnsweredQuestions = g.Key.TotalUnAnsweredQuestions,
+                                                  InCorrectAnswers = g.Key.TotalInCorrectAnswers,
+                                                  CorrectAnswers = g.Key.TotalCorrectAnswers,
                                               }).ToList();
                         if (submittedQuizResponses.Count>0)
                         {
@@ -643,6 +650,45 @@ namespace rmsapp.rmssysapi.Controllers
                         }
                     }
                     return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
+        #region Get Submitted Quiz Info
+        [HttpGet("quiz/interviewer/submitquizdetails/{quizId:int}")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(SubmittedQuizDetailedInfo))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> GetSubmittedQuiz(int quizId)
+        {
+            SubmittedQuizDetailedInfo submittedQuizAnswerResponses = new SubmittedQuizDetailedInfo();
+            try
+            {
+                var totalQuizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
+                var submittedQuizDetails = await _quizSubmissionService.GetQuizDetails(quizId).ConfigureAwait(false);
+                if (totalQuizDetails != null && submittedQuizDetails!=null)
+                {
+                    submittedQuizAnswerResponses = new SubmittedQuizDetailedInfo {
+                        QuizId= submittedQuizDetails.QuizId,
+                        QuizSets= submittedQuizDetails.QuizSetList.ToArray(),
+                        TotalQuestions= submittedQuizDetails.TotalQuestions,
+                        AnsweredQuestions = submittedQuizDetails.TotalAnsweredQuestions,
+                        NotAnsweredQuestions = submittedQuizDetails.TotalUnAnsweredQuestions,
+                        InCorrectAnswers = submittedQuizDetails.TotalInCorrectAnswers,
+                        CorrectAnswers = submittedQuizDetails.TotalCorrectAnswers,
+                    };
+
+                    if (submittedQuizAnswerResponses!=null)
+                    {
+                        return Ok(submittedQuizAnswerResponses);
+                    }
+                }
+                return NoContent();
             }
             catch (Exception ex)
             {
