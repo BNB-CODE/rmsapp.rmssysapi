@@ -20,7 +20,8 @@ namespace rmsapp.rmssysapi.service.Models
     public class SubmittedQuizDetailedInfo
     {
         public int QuizId { get; set; }
-        public InterviewerQuizSet[] QuizSets { get; set; }
+        public string SubjectName { get; set; }
+        public int SetNumber { get; set; }
         public int TotalQuestions { get; set; }
         public int AnsweredQuestions { get; set; }
         public int NotAnsweredQuestions { get; set; }

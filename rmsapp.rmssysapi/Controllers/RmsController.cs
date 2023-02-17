@@ -661,29 +661,40 @@ namespace rmsapp.rmssysapi.Controllers
         #region Get Submitted Quiz Info
         [HttpGet("quiz/interviewer/submitquizdetails/{quizId:int}")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(SubmittedQuizDetailedInfo))]
+        [ProducesResponseType(200, Type = typeof(SubmittedQuizDetailedInfo[]))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> GetSubmittedQuiz(int quizId)
         {
-            SubmittedQuizDetailedInfo submittedQuizAnswerResponses = new SubmittedQuizDetailedInfo();
+            List<SubmittedQuizDetailedInfo> submittedQuizAnswerResponses = new List<SubmittedQuizDetailedInfo>();
             try
             {
-                var totalQuizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
                 var submittedQuizDetails = await _quizSubmissionService.GetQuizDetails(quizId).ConfigureAwait(false);
-                if (totalQuizDetails != null && submittedQuizDetails!=null)
+                if ( submittedQuizDetails!=null)
                 {
-                    submittedQuizAnswerResponses = new SubmittedQuizDetailedInfo {
-                        QuizId= submittedQuizDetails.QuizId,
-                        QuizSets= submittedQuizDetails.QuizSetList.ToArray(),
-                        TotalQuestions= submittedQuizDetails.TotalQuestions,
-                        AnsweredQuestions = submittedQuizDetails.TotalAnsweredQuestions,
-                        NotAnsweredQuestions = submittedQuizDetails.TotalUnAnsweredQuestions,
-                        InCorrectAnswers = submittedQuizDetails.TotalInCorrectAnswers,
-                        CorrectAnswers = submittedQuizDetails.TotalCorrectAnswers,
-                    };
+                    List<QuizAnswersDetailedInfo> answersDetailedInfos= submittedQuizDetails?.SubmittedAnswersInfo?.Count>0? submittedQuizDetails.SubmittedAnswersInfo : new List<QuizAnswersDetailedInfo>();
+                    submittedQuizAnswerResponses = answersDetailedInfos.GroupBy(x => new
+                    {
+                        x.SetNumber,
+                        x.SubjectName,
+                        x.TotalQuestions,
+                        x.TotalAnsweredQuestions,
+                        x.TotalUnAnsweredQuestions,
+                        x.TotalInCorrectAnswers,
+                        x.TotalCorrectAnswers
+                    }).Select(x => new SubmittedQuizDetailedInfo
+                    {
+                        QuizId = submittedQuizDetails.QuizId,
+                        SetNumber =x.Key.SetNumber,
+                        SubjectName=x.Key.SubjectName,
+                        TotalQuestions = x.Key.TotalQuestions,
+                        AnsweredQuestions = x.Key.TotalAnsweredQuestions,
+                        NotAnsweredQuestions = x.Key.TotalUnAnsweredQuestions,
+                        InCorrectAnswers = x.Key.TotalInCorrectAnswers,
+                        CorrectAnswers = x.Key.TotalCorrectAnswers,
+                    }).ToList();
 
-                    if (submittedQuizAnswerResponses!=null)
+                    if (submittedQuizAnswerResponses.Count>0)
                     {
                         return Ok(submittedQuizAnswerResponses);
                     }
