@@ -11,6 +11,7 @@ namespace rmsapp.rmssysapi.service.Models
     {
         [Key]
         public int QuizId { get; set; }
+        public string QuizTopic { get; set; }
         public string CandidateId { get; set; }
         [Column(TypeName = "jsonb")]
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -28,6 +29,9 @@ namespace rmsapp.rmssysapi.service.Models
                 QuizSets = JsonConvert.SerializeObject(value);
             }
         }
+        public int TotalQuestions { get; set; }
+
+        public int QuizTimeInMinutes { get; set; }
 
         /// <summary>
         /// Gets or sets the confirmation code for the Candidate.

@@ -16,7 +16,7 @@ namespace workforceapp.workforcesysapi.Service.Utils
             {
                 if (!string.IsNullOrEmpty(RawName))
                 {
-                    return RawName.Trim();
+                    return (RawName.Trim()).ToUpper();
                 }
                 return RawName;
             }

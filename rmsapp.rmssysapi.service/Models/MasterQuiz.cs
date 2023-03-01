@@ -17,7 +17,7 @@ namespace rmsapp.rmssysapi.service.Models
         [Key]
         [Column(Order = 2)]
         public string SubjectName { get; set; }
-        public string[] Tags { get; set; }
+        public string Tag { get; set; }
         public string Question { get; set; }
         public string QuestionType { get; set; }
         public string[] QuestionOptions { get; set; }

@@ -11,7 +11,9 @@ namespace rmsapp.rmssysapi.service.DependentInterfaces
         Task<bool> Add(IEnumerable<MasterQuiz> masterQuiz);
         Task<IEnumerable<MasterQuiz>> GetQuestions(string version, string subjec);
         Task<IEnumerable<MasterQuiz>> GetQuizDetails(string subject);
-        
+
+        Task<IEnumerable<MasterQuiz>> GetMultipleSetQuestionsList(List<InterviewerQuizSet> interviewerQuizzes);
+
         //Task<IEnumerable<MasterQuiz>> GetAllQuizDetails();
         //Task<bool> Update(MasterQuiz masterQuiz);
         //Task<bool> Delete(int questionId, int setNumber, string subjectName);

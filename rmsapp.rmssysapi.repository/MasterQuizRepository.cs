@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
+using workforceapp.workforcesysapi.Service.Utils;
 
 namespace rmsapp.rmssysapi.repository
 {
@@ -63,6 +64,22 @@ namespace rmsapp.rmssysapi.repository
             return questions;
         }
 
+        #endregion
+        #region Get Toatla Questions with Multiple Sets
+        public async Task<IEnumerable<MasterQuiz>> GetMultipleSetQuestionsList(List<InterviewerQuizSet> interviewerQuizzes)
+
+        {
+            List<MasterQuiz> masterQuizzes = new List<MasterQuiz>();
+            if (interviewerQuizzes?.Count>0)
+            {
+                foreach (var item in interviewerQuizzes)
+                {
+                    List<MasterQuiz> MasterQuiz = await _dbContext.AssignmentMaster.Where(x =>item.QuestionIds.Contains(x.QuestionId)&& x.Version ==U.Convert(item.Version) && x.SubjectName == U.Convert(item.SubjectName)).ToListAsync().ConfigureAwait(false);
+                    masterQuizzes.AddRange(MasterQuiz);
+                }
+            }
+            return masterQuizzes;
+        }
         #endregion
     }
 }

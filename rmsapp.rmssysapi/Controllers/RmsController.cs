@@ -49,7 +49,7 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(QuizDetails))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Import(string version, string subjectName, IFormFile formFile, CancellationToken cancellationToken)
+        public async Task<IActionResult> Import(string version,string subjectName,string tag, IFormFile formFile, CancellationToken cancellationToken)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace rmsapp.rmssysapi.Controllers
                 var list = await _excelDataConversionService.GetMasterQuizData(formFile, cancellationToken).ConfigureAwait(false);
                 if (list.Count() > 0)
                 {
-                    var res = await _masterQuizService.Add(vesionVal, subjectVal, list).ConfigureAwait(false);
+                    var res = await _masterQuizService.Add(vesionVal, subjectVal,tag, list).ConfigureAwait(false);
                     if (res)
                     {
                         return Ok();
@@ -250,29 +250,29 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(InterviewerQuizResponse))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> createquiz(List<InterviewerQuizSet> interviewerQuizRequest)
+        public async Task<IActionResult> createquiz(CreateQuizRequest interviewerQuizRequest)
         {
             InterviewerQuizResponse quizResponse = new InterviewerQuizResponse();
 
             try
             {
-                if (interviewerQuizRequest.Count > 0)
+                if (interviewerQuizRequest!=null && interviewerQuizRequest?.QuizSetWiseInfo?.Length!=-1 && interviewerQuizRequest.TotalQuestions>0)
                 {
                     int maxQuestionId = await _quizService.GteLatestQuizId().ConfigureAwait(false);
-                    var (confirmationCode, confirmationCodeExpiration) = GetInvitationCode();
+                    var (confirmationCode, confirmationCodeExpiration) = GetInvitationCode(interviewerQuizRequest.QuizLinkExpireInHours);
                     Quiz quiz = new Quiz()
                     {
                         QuizId = maxQuestionId + 1,
                         CreatedDate = DateTime.Now,
                         IsActive = true,
                         ConfirmationCode = confirmationCode,
+                        TotalQuestions=interviewerQuizRequest.TotalQuestions,
+                        QuizTimeInMinutes = interviewerQuizRequest.QuizTimeInMinutes,
+                        QuizTopic=interviewerQuizRequest.QuizTopic,
                         ConfirmationCodeExpiration = confirmationCodeExpiration,
-                        QuizSetList = interviewerQuizRequest.Count > 0 ? interviewerQuizRequest.Select(x => new InterviewerQuizSet
-                        {
-                            QuestionId=x.QuestionId,
-                            Version = U.Convert(x.Version),
-                            SubjectName = U.Convert(x.SubjectName)
-                        }).ToList() : new List<InterviewerQuizSet>()
+                        QuizSetList = interviewerQuizRequest?.QuizSetWiseInfo.Length>-1? interviewerQuizRequest.QuizSetWiseInfo.Select(x=>new InterviewerQuizSet {
+                        QuestionIds=x.QuestionIds.ToArray(),Version=U.Convert(x.Version),SubjectName=U.Convert(x.SubjectName)}).ToList()
+                        : new List<InterviewerQuizSet>()
                         //CreatedBy= Currentuser
                     };
                     var res = await _quizService.Add(quiz).ConfigureAwait(false);
@@ -428,16 +428,7 @@ namespace rmsapp.rmssysapi.Controllers
 
                     if (quizDetails != null)
                     {
-
-                        foreach (var item in quizDetails.QuizSetList)
-                        {
-                            List<CandidateQuestions> quizzes = new List<CandidateQuestions>();
-                            quizzes = (List<CandidateQuestions>)await _masterQuizService.GetCandidateAssignment(U.Convert(item.Version), U.Convert(item.SubjectName)).ConfigureAwait(false);
-                            if (quizzes?.Count > 0)
-                            {
-                                quizResponse.AddRange(quizzes);
-                            }
-                        }
+                        quizResponse = (List<CandidateQuestions>)await _masterQuizService.GetCandidateAssignmentMultipleSetsList(quizDetails.QuizSetList).ConfigureAwait(false);
                         string candidateId = string.IsNullOrEmpty(interviewerQuizRequest.Email) ? string.Empty : ((interviewerQuizRequest.Email).Trim()).ToUpper();
                         Candidate candidate = new Candidate
                         {
@@ -491,12 +482,7 @@ namespace rmsapp.rmssysapi.Controllers
                         List<QuizAnswersDetailedInfo> submittedAnswers = new List<QuizAnswersDetailedInfo>();
                         foreach (var item in quizDetails.QuizSetList)
                         {
-                            List<SubjectExpertQuestions> quizzes = new List<SubjectExpertQuestions>();
-                            quizzes = (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(U.Convert(item.Version), U.Convert(item.SubjectName)).ConfigureAwait(false);
-                            if (quizzes?.Count > 0)
-                            {
-                                masterQuizzes.AddRange(quizzes);
-                            }
+                            masterQuizzes= (List<SubjectExpertQuestions>)await _masterQuizService.GetCandidateAssignmentMultipleSetsList(quizDetails.QuizSetList).ConfigureAwait(false);
                         }
                         if (masterQuizzes?.Count > 0 && subMittedQuizInfo?.Count > 0)
                         {
@@ -629,8 +615,6 @@ namespace rmsapp.rmssysapi.Controllers
                                                             IsCorrect = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.Version == g.Key.Version).SelectMany(x => x.QuizAnswersDetails)
                                                                              .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).Select(x => x.IsCorrect).SingleOrDefault()
 
-
-
                                                         }).ToList();
                         if (submittedQuizAnswerResponses.Count > 0)
                         {
@@ -751,8 +735,8 @@ namespace rmsapp.rmssysapi.Controllers
             }
         }
         #endregion
-        private static (string, DateTime) GetInvitationCode() =>
-        GetConfirmationCode(AccountOptions.InvitationCodeDuration);
+        private static (string, DateTime) GetInvitationCode(int timeInHours) =>
+        GetConfirmationCode(timeInHours > 0?TimeSpan.FromHours(timeInHours) :AccountOptions.InvitationCodeDuration);
         private static (string, DateTime) GetConfirmationCode(TimeSpan duration)
         {
             var (confirmationCode, confirmationCodeExpiration, _) =

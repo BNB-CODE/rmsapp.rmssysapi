@@ -24,6 +24,9 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<string>("CandidateId")
                         .HasColumnType("text");
 
+                    b.Property<string>("CandidateName")
+                        .HasColumnType("text");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
@@ -33,29 +36,11 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<string>("FirstName")
-                        .HasColumnType("text");
-
-                    b.Property<int>("InterviewLevel")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MiddleName")
-                        .HasColumnType("text");
-
                     b.Property<string>("Phone")
                         .HasColumnType("text");
-
-                    b.Property<string>("Skills")
-                        .HasColumnType("text");
-
-                    b.Property<double>("TotalExperience")
-                        .HasColumnType("double precision");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
@@ -73,8 +58,8 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("SetNumber")
-                        .HasColumnType("integer");
+                    b.Property<string>("Version")
+                        .HasColumnType("text");
 
                     b.Property<string>("SubjectName")
                         .HasColumnType("text");
@@ -103,13 +88,16 @@ namespace rmsapp.rmssysapi.repository.Migrations
                     b.Property<string>("QuestionType")
                         .HasColumnType("text");
 
+                    b.Property<string>("Tag")
+                        .HasColumnType("text");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("QuestionId", "SetNumber", "SubjectName");
+                    b.HasKey("QuestionId", "Version", "SubjectName");
 
                     b.ToTable("AssignmentMaster");
                 });
@@ -150,6 +138,15 @@ namespace rmsapp.rmssysapi.repository.Migrations
 
                     b.Property<DateTime?>("QuizSubmittedAt")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("QuizTimeInMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuizTopic")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TotalQuestions")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");

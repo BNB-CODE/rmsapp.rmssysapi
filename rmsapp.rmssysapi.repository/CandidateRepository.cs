@@ -29,6 +29,7 @@ namespace rmsapp.rmssysapi.repository
             return result;
         }
         #endregion
+
         #region Get All Candidates
         public async Task<IEnumerable<Candidate>> GetTotalCandidateDetails()
         {

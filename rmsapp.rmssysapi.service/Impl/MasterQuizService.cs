@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using workforceapp.workforcesysapi.Service.Utils;
 
 namespace rmsapp.rmssysapi.service.Impl
 {
@@ -17,7 +18,7 @@ namespace rmsapp.rmssysapi.service.Impl
         {
             _masterQuizRepository = masterQuizRepository;
         }
-        public async Task<bool> Add(string version,string subjectName,IEnumerable<QuizDetails> masterQuiz)
+        public async Task<bool> Add(string version,string subjectName, string tag,IEnumerable<QuizDetails> masterQuiz)
         {
             try
             {
@@ -30,8 +31,9 @@ namespace rmsapp.rmssysapi.service.Impl
                     string[] questionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
                     
                     quiz.QuestionId = maxQuestionId + 1;
-                    quiz.Version = version;
-                    quiz.SubjectName = (subjectName.Trim()).ToUpper();
+                    quiz.Version = U.Convert(version);
+                    quiz.SubjectName =U.Convert(subjectName);
+                    quiz.Tag = tag;
                     quiz.Question = item.Question;
                     quiz.QuestionType = ((item.QuestionType).Trim()).ToUpper();
                     quiz.QuestionOptions = !string.IsNullOrEmpty(item.QuestionOptions) ?((item.QuestionOptions).Split(',')).Select(t => t).ToArray():null; 
@@ -166,6 +168,62 @@ namespace rmsapp.rmssysapi.service.Impl
             }
             List<string> questionIds = UploadExcelSheetOrder.AlphabetName(indexes);
             return questionIds;
+        }
+        public async Task<IEnumerable<CandidateQuestions>> GetCandidateAssignmentMultipleSetsList(List<InterviewerQuizSet> interviewerQuizSets)
+        {
+            try
+            {
+
+                var masterQuiz = await _masterQuizRepository.GetMultipleSetQuestionsList(interviewerQuizSets).ConfigureAwait(false);
+                var result = masterQuiz.Select(masterQuiz => new CandidateQuestions
+                {
+                    QuestionId = masterQuiz.QuestionId,
+                    Version = masterQuiz.Version,
+                    SubjectName = masterQuiz.SubjectName,
+                    Question = masterQuiz.Question,
+                    QuestionType = masterQuiz.QuestionType,
+                    QuestionOptions = masterQuiz.QuestionOptions
+                }).ToList();
+
+                return result;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetCandidateAssignmentList:: Get Assignment failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetCandidateAssignmentList:: Get Assignment failed {ex.Message}");
+            }
+        }
+        public async Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestionsMultipleSetsList(List<InterviewerQuizSet> interviewerQuizSets)
+        {
+            try
+            {
+                var masterQuiz = await _masterQuizRepository.GetMultipleSetQuestionsList(interviewerQuizSets).ConfigureAwait(false);
+                var result = masterQuiz.Select(masterQuiz => new SubjectExpertQuestions
+                {
+                    QuestionId = masterQuiz.QuestionId,
+                    Version = masterQuiz.Version,
+                    SubjectName = masterQuiz.SubjectName,
+                    Question = masterQuiz.Question,
+                    QuestionType = masterQuiz.QuestionType,
+                    QuestionOptions = masterQuiz.QuestionOptions,
+                    QuestionAnswers = masterQuiz.QuestionAnswers,
+                    QuestionAnswersIds = masterQuiz.QuestionAnswersIds
+                }).ToList();
+
+                return result;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetMasterQuestionsMultipleSetsList:: GetMasterQuestionsMultipleSetsList failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetMasterQuestionsMultipleSetsList:: GetMasterQuestionsMultipleSetsList failed {ex.Message}");
+            }
+
         }
     }
 }

@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace rmsapp.rmssysapi.repository.Migrations
 {
-    public partial class changes : Migration
+    public partial class versionchanges : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,8 +13,9 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 columns: table => new
                 {
                     QuestionId = table.Column<int>(type: "integer", nullable: false),
-                    SetNumber = table.Column<int>(type: "integer", nullable: false),
+                    Version = table.Column<string>(type: "text", nullable: false),
                     SubjectName = table.Column<string>(type: "text", nullable: false),
+                    Tag = table.Column<string>(type: "text", nullable: true),
                     Question = table.Column<string>(type: "text", nullable: true),
                     QuestionType = table.Column<string>(type: "text", nullable: true),
                     QuestionOptions = table.Column<string[]>(type: "text[]", nullable: true),
@@ -28,7 +29,7 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AssignmentMaster", x => new { x.QuestionId, x.SetNumber, x.SubjectName });
+                    table.PrimaryKey("PK_AssignmentMaster", x => new { x.QuestionId, x.Version, x.SubjectName });
                 });
 
             migrationBuilder.CreateTable(
@@ -36,14 +37,9 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 columns: table => new
                 {
                     CandidateId = table.Column<string>(type: "text", nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: true),
-                    MiddleName = table.Column<string>(type: "text", nullable: true),
-                    LastName = table.Column<string>(type: "text", nullable: true),
+                    CandidateName = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: true),
                     Phone = table.Column<string>(type: "text", nullable: true),
-                    InterviewLevel = table.Column<int>(type: "integer", nullable: false),
-                    Skills = table.Column<string>(type: "text", nullable: true),
-                    TotalExperience = table.Column<double>(type: "double precision", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -83,8 +79,11 @@ namespace rmsapp.rmssysapi.repository.Migrations
                 {
                     QuizId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    QuizTopic = table.Column<string>(type: "text", nullable: true),
                     CandidateId = table.Column<string>(type: "text", nullable: true),
                     QuizSets = table.Column<string>(type: "jsonb", nullable: true),
+                    TotalQuestions = table.Column<int>(type: "integer", nullable: false),
+                    QuizTimeInMinutes = table.Column<int>(type: "integer", nullable: false),
                     ConfirmationCode = table.Column<string>(type: "text", nullable: true),
                     ConfirmationCodeExpiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     QuizSubmittedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
