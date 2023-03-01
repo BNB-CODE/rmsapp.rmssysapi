@@ -10,6 +10,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using workforceapp.workforcesysapi.Service.Utils;
+
 namespace rmsapp.rmssysapi.Controllers
 {
     [Produces("application/json")]
@@ -47,11 +49,24 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(QuizDetails))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Import(int setNumber, string SubjectName, IFormFile formFile, CancellationToken cancellationToken)
+        public async Task<IActionResult> Import(string version, string subjectName, IFormFile formFile, CancellationToken cancellationToken)
         {
             try
             {
-
+                string vesionVal = U.Convert(version);
+                string subjectVal= U.Convert(subjectName);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                {
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+                   
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
+                }
                 if (formFile == null || formFile.Length <= 0)
                 {
                     return BadRequest("Excel file is empty");
@@ -64,7 +79,7 @@ namespace rmsapp.rmssysapi.Controllers
                 var list = await _excelDataConversionService.GetMasterQuizData(formFile, cancellationToken).ConfigureAwait(false);
                 if (list.Count() > 0)
                 {
-                    var res = await _masterQuizService.Add(setNumber, SubjectName, list).ConfigureAwait(false);
+                    var res = await _masterQuizService.Add(vesionVal, subjectVal, list).ConfigureAwait(false);
                     if (res)
                     {
                         return Ok();
@@ -115,16 +130,30 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions))]
         // [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> GetSubjectExpertQuestions(int set, string subject)
+        public async Task<IActionResult> GetSubjectExpertQuestions(string version, string subject)
         {
             try
             {
+                string vesionVal = U.Convert(version);
+                string subjectVal = U.Convert(subject);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                {
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
+                }
                 if (!string.IsNullOrEmpty(subject))
                 {
                     subject = subject.ToUpper();
                 }
 
-                var res = await _masterQuizService.GetMasterQuestions(set, subject);
+                var res = await _masterQuizService.GetMasterQuestions(vesionVal, subjectVal);
 
                 if (res.Any())
                 {
@@ -152,12 +181,13 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                if (!string.IsNullOrEmpty(subject))
+                string subjectVal = U.Convert(subject);
+                if (string.IsNullOrEmpty(subjectVal))
                 {
-                    subject = subject.ToUpper();
+                    return BadRequest("Please provide  Valid  Subject");
                 }
 
-                var res = await _masterQuizService.GetQuizDetails(subject).ConfigureAwait(false);
+                var res = await _masterQuizService.GetQuizDetails(subjectVal).ConfigureAwait(false);
 
                 if (res.Any())
                 {
@@ -179,16 +209,26 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
         // [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> GetCandidateQuestions(int set, string subject)
+        public async Task<IActionResult> GetCandidateQuestions(string version, string subject)
         {
             try
             {
-                if (!string.IsNullOrEmpty(subject))
+                string vesionVal = U.Convert(version);
+                string subjectVal = U.Convert(subject);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
-                    subject = subject.ToUpper();
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
                 }
 
-                var res = await _masterQuizService.GetCandidateAssignment(set, subject);
+                var res = await _masterQuizService.GetCandidateAssignment(vesionVal, subjectVal);
 
                 if (res.Any())
                 {
@@ -216,10 +256,10 @@ namespace rmsapp.rmssysapi.Controllers
 
             try
             {
-                if (interviewerQuizRequest.Count>0)
+                if (interviewerQuizRequest.Count > 0)
                 {
                     int maxQuestionId = await _quizService.GteLatestQuizId().ConfigureAwait(false);
-                    var (confirmationCode, confirmationCodeExpiration) =GetInvitationCode();
+                    var (confirmationCode, confirmationCodeExpiration) = GetInvitationCode();
                     Quiz quiz = new Quiz()
                     {
                         QuizId = maxQuestionId + 1,
@@ -227,21 +267,25 @@ namespace rmsapp.rmssysapi.Controllers
                         IsActive = true,
                         ConfirmationCode = confirmationCode,
                         ConfirmationCodeExpiration = confirmationCodeExpiration,
-                        QuizSetList = interviewerQuizRequest.Count > 0 ? interviewerQuizRequest.Select(x => new InterviewerQuizSet {
-                            SetNumber = x.SetNumber, SubjectName = x.SubjectName.Trim().ToUpper(),TotalQuestionsCount=x.TotalQuestionsCount }).ToList() : new List<InterviewerQuizSet>()
+                        QuizSetList = interviewerQuizRequest.Count > 0 ? interviewerQuizRequest.Select(x => new InterviewerQuizSet
+                        {
+                            QuestionId=x.QuestionId,
+                            Version = U.Convert(x.Version),
+                            SubjectName = U.Convert(x.SubjectName)
+                        }).ToList() : new List<InterviewerQuizSet>()
                         //CreatedBy= Currentuser
                     };
                     var res = await _quizService.Add(quiz).ConfigureAwait(false);
                     if (res)
                     {
                         var quizDetails = await _quizService.GetQuizDetails(quiz.QuizId).ConfigureAwait(false);
-                        if (quizResponse!=null)
+                        if (quizResponse != null)
                         {
                             quizResponse.QuizId = quizDetails.QuizId;
                             quizResponse.QuizLink = quizDetails.ConfirmationCode;
                             quizResponse.QuizLinkExpiresAt = quizDetails.ConfirmationCodeExpiration;
                         }
-                        
+
                         return Ok(quizResponse);
                     }
                     else
@@ -276,18 +320,19 @@ namespace rmsapp.rmssysapi.Controllers
                 List<Quiz> quizDetails = (List<Quiz>)await _quizService.GetTotalQuizDetails().ConfigureAwait(false);
                 if (quizDetails?.Count > 0)
                 {
-                    quizzInfoResponses = quizDetails.Select(x=>new QuizzInfoResponse {
-                                         QuizId=x.QuizId,
-                                         CandidateId=x.CandidateId,
-                                         QuizCodeExpirationAt=x.ConfirmationCodeExpiration!=null? (x.ConfirmationCodeExpiration)?.ToString("dd MMMM yyyy hh:mm tt") : null,//.ToString("dddd,dd MMMM yyyy hh:mm tt") 
-                        QuizSubmittedAt =x.QuizSubmittedAt != null ? (x.QuizSubmittedAt)?.ToString("dd MMMM yyyy hh:mm tt") : null,
-                                         LoginAttempts =x.LoginAttempts,
-                                         LastLoggedIn=x.LastLoggedIn != null ? (x.LastLoggedIn)?.ToString("dd MMMM yyyy hh:mm tt") : null,
-                                         Url = quizUrl+x.QuizId+"/"+x.ConfirmationCode
+                    quizzInfoResponses = quizDetails.Select(x => new QuizzInfoResponse
+                    {
+                        QuizId = x.QuizId,
+                        CandidateId = x.CandidateId,
+                        QuizCodeExpirationAt = x.ConfirmationCodeExpiration != null ? (x.ConfirmationCodeExpiration)?.ToString("dd MMMM yyyy hh:mm tt") : null,//.ToString("dddd,dd MMMM yyyy hh:mm tt") 
+                        QuizSubmittedAt = x.QuizSubmittedAt != null ? (x.QuizSubmittedAt)?.ToString("dd MMMM yyyy hh:mm tt") : null,
+                        LoginAttempts = x.LoginAttempts,
+                        LastLoggedIn = x.LastLoggedIn != null ? (x.LastLoggedIn)?.ToString("dd MMMM yyyy hh:mm tt") : null,
+                        Url = quizUrl + x.QuizId + "/" + x.ConfirmationCode
                         //DateTime.Now.ToString("yyyyMMddHHmmss");
                     }).ToList();
 
-                   return Ok(quizzInfoResponses);
+                    return Ok(quizzInfoResponses);
                 }
                 else
                 {
@@ -308,36 +353,37 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> checkquizid(int quizId, string confirmationCode)
-        {;
+        {
+            ;
 
             try
             {
-                    if (quizId > 0 && !string.IsNullOrEmpty(confirmationCode))
+                if (quizId > 0 && !string.IsNullOrEmpty(confirmationCode))
+                {
+                    var quizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
+                    if (quizDetails == null)
                     {
-                        var quizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
-                        if (quizDetails == null)
-                        {
-                            return BadRequest("interview link not found");
-                        }
-                        else if (quizDetails.ConfirmationCodeExpiration.Value <= DateTime.UtcNow)
-                        {
-                            return BadRequest("interview link expired");
-                        }
-                        else if (quizDetails.QuizSubmittedAt != null)
-                        {
-                            return BadRequest("interview already  submitted");
-                        }
-                        else if (quizDetails.ConfirmationCode != confirmationCode)
-                        {
-                            return BadRequest("invalid interview link");
-                        }
-                        else
-                        {
-                        return Ok();
-                        }
+                        return BadRequest("interview link not found");
+                    }
+                    else if (quizDetails.ConfirmationCodeExpiration.Value <= DateTime.UtcNow)
+                    {
+                        return BadRequest("interview link expired");
+                    }
+                    else if (quizDetails.QuizSubmittedAt != null)
+                    {
+                        return BadRequest("interview already  submitted");
+                    }
+                    else if (quizDetails.ConfirmationCode != confirmationCode)
+                    {
+                        return BadRequest("invalid interview link");
                     }
                     else
                     {
+                        return Ok();
+                    }
+                }
+                else
+                {
                     return BadRequest("Please provide valid quizId & confirmation code");
                 }
             }
@@ -354,13 +400,13 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> AddUser(int quizId,string confirmationCode,AddUserRequest interviewerQuizRequest)
+        public async Task<IActionResult> AddUser(int quizId, string confirmationCode, AddUserRequest interviewerQuizRequest)
         {
             List<CandidateQuestions> quizResponse = new List<CandidateQuestions>();
 
             try
             {
-                if (quizId>0 && interviewerQuizRequest != null)
+                if (quizId > 0 && interviewerQuizRequest != null)
                 {
                     var quizDetails = await _quizService.GetQuizDetails(quizId).ConfigureAwait(false);
                     if (quizDetails == null)
@@ -371,7 +417,7 @@ namespace rmsapp.rmssysapi.Controllers
                     {
                         return BadRequest("interview link expired");
                     }
-                    else if (quizDetails.QuizSubmittedAt!=null)
+                    else if (quizDetails.QuizSubmittedAt != null)
                     {
                         return BadRequest("interview already  submitted");
                     }
@@ -386,17 +432,16 @@ namespace rmsapp.rmssysapi.Controllers
                         foreach (var item in quizDetails.QuizSetList)
                         {
                             List<CandidateQuestions> quizzes = new List<CandidateQuestions>();
-                            quizzes = (List<CandidateQuestions>)await _masterQuizService.GetCandidateAssignment(item.SetNumber, ((item.SubjectName).Trim()).ToUpper()).ConfigureAwait(false);
+                            quizzes = (List<CandidateQuestions>)await _masterQuizService.GetCandidateAssignment(U.Convert(item.Version), U.Convert(item.SubjectName)).ConfigureAwait(false);
                             if (quizzes?.Count > 0)
                             {
                                 quizResponse.AddRange(quizzes);
                             }
                         }
-                        string candidateId= string.IsNullOrEmpty(interviewerQuizRequest.Email) ? string.Empty : ((interviewerQuizRequest.Email).Trim()).ToUpper();
-                        Candidate candidate = new Candidate {
-                            FirstName = interviewerQuizRequest.FirstName,
-                            MiddleName = interviewerQuizRequest.MiddleName,
-                            LastName = interviewerQuizRequest.LastName,
+                        string candidateId = string.IsNullOrEmpty(interviewerQuizRequest.Email) ? string.Empty : ((interviewerQuizRequest.Email).Trim()).ToUpper();
+                        Candidate candidate = new Candidate
+                        {
+                            CandidateName=interviewerQuizRequest.CandidateName,
                             Email = interviewerQuizRequest.Email,
                             CandidateId = candidateId,
                             Phone = interviewerQuizRequest.Phone,
@@ -412,7 +457,7 @@ namespace rmsapp.rmssysapi.Controllers
                         }
                     }
 
-                   return BadRequest("please provide valid info");
+                    return BadRequest("please provide valid info");
                 }
                 else
                 {
@@ -436,7 +481,7 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                if (quizSumissionRequest!=null)
+                if (quizSumissionRequest != null)
                 {
                     var quizDetails = await _quizService.GetQuizDetails(quizSumissionRequest.QuizId).ConfigureAwait(false);
                     if (quizDetails != null)
@@ -447,25 +492,25 @@ namespace rmsapp.rmssysapi.Controllers
                         foreach (var item in quizDetails.QuizSetList)
                         {
                             List<SubjectExpertQuestions> quizzes = new List<SubjectExpertQuestions>();
-                            quizzes =(List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(item.SetNumber, item.SubjectName).ConfigureAwait(false);
-                            if (quizzes?.Count>0)
+                            quizzes = (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(U.Convert(item.Version), U.Convert(item.SubjectName)).ConfigureAwait(false);
+                            if (quizzes?.Count > 0)
                             {
                                 masterQuizzes.AddRange(quizzes);
                             }
                         }
-                        if (masterQuizzes?.Count > 0 && subMittedQuizInfo?.Count>0)
+                        if (masterQuizzes?.Count > 0 && subMittedQuizInfo?.Count > 0)
                         {
                             foreach (var quizInfo in subMittedQuizInfo)
                             {
                                 QuizAnswersDetailedInfo answersDetailedInfo = new QuizAnswersDetailedInfo();
                                 List<QuizAnswer> subjectWiseSetDetails = quizInfo.quizAnswers.ToList();
-                                answersDetailedInfo.SetNumber = quizInfo.SetNumber;
+                                answersDetailedInfo.Version = quizInfo.Version;
                                 answersDetailedInfo.SubjectName = quizInfo.SubjectName;
                                 answersDetailedInfo.TotalQuestions = subjectWiseSetDetails.Count();
-                                answersDetailedInfo.TotalAnsweredQuestions = subjectWiseSetDetails.Where(x=>x.QuestionAnswerIds.Count()>0 && x.QuestionAnswers.Count()>0).Count();
+                                answersDetailedInfo.TotalAnsweredQuestions = subjectWiseSetDetails.Where(x => x.QuestionAnswerIds.Count() > 0 && x.QuestionAnswers.Count() > 0).Count();
                                 answersDetailedInfo.TotalUnAnsweredQuestions = subjectWiseSetDetails.Where(x => x.QuestionAnswerIds.Count() == 0 && x.QuestionAnswers.Count() == 0).Count();
                                 List<QuizAnswerTotalDetails> quizAnswerTotalDetails = new List<QuizAnswerTotalDetails>();
-                                foreach (QuizAnswer quizAnswer in  subjectWiseSetDetails)
+                                foreach (QuizAnswer quizAnswer in subjectWiseSetDetails)
                                 {
                                     QuizAnswerTotalDetails details = new QuizAnswerTotalDetails();
                                     details.QuestionId = quizAnswer.QuestionId;
@@ -473,9 +518,9 @@ namespace rmsapp.rmssysapi.Controllers
                                     details.SubmittedQuestionAnswerIds = quizAnswer.QuestionAnswerIds.OrderBy(x => x).ToArray();
                                     details.SubmittedQuestionAnswers = quizAnswer.QuestionAnswers;
 
-                                    details.MasterQuestionAnswerIds = masterQuizzes.Where(x => x.SetNumber == quizInfo.SetNumber && x.SubjectName == quizInfo.SubjectName
+                                    details.MasterQuestionAnswerIds = masterQuizzes.Where(x => x.Version == quizInfo.Version && x.SubjectName == quizInfo.SubjectName
                                            && x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswersIds).ToArray();
-                                    details.MasterQuestionAnswers = masterQuizzes.Where(x => x.SetNumber == quizInfo.SetNumber && x.SubjectName == quizInfo.SubjectName
+                                    details.MasterQuestionAnswers = masterQuizzes.Where(x => x.Version == quizInfo.Version && x.SubjectName == quizInfo.SubjectName
                                            && x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswers).ToArray();
                                     details.IsCorrect = CheckArrayAnswers(details.MasterQuestionAnswerIds, details.SubmittedQuestionAnswerIds);
                                     quizAnswerTotalDetails.Add(details);
@@ -492,19 +537,19 @@ namespace rmsapp.rmssysapi.Controllers
                             CandidateId = quizDetails.CandidateId,
                             IsActive = true,
                             QuizSetList = quizDetails.QuizSetList,
-                            TotalQuestions= quizSumissionRequest.TotalQuestions,
+                            TotalQuestions = quizSumissionRequest.TotalQuestions,
                             TotalAnsweredQuestions = quizSumissionRequest.AnsweredQuestions,
                             TotalUnAnsweredQuestions = quizSumissionRequest.NotAnsweredQuestions,
                             SubmittedAnswersInfo = submittedAnswers,
-                            TotalCorrectAnswers= submittedAnswers.GroupBy(x=>new {x.TotalCorrectAnswers }).Sum(x=>x.Key.TotalCorrectAnswers),
+                            TotalCorrectAnswers = submittedAnswers.GroupBy(x => new { x.TotalCorrectAnswers }).Sum(x => x.Key.TotalCorrectAnswers),
                             TotalInCorrectAnswers = submittedAnswers.GroupBy(x => new { x.TotalInCorrectAnswers }).Sum(x => x.Key.TotalInCorrectAnswers),
                             UpdatedDate = DateTime.Now,
                             //CreatedBy= Currentuser
                         };
                         quizDetails.QuizSubmittedAt = DateTime.Now;
                         quizDetails.LastLoggedIn = DateTime.Now;
-                        quizDetails.LoginAttempts = quizDetails.LoginAttempts+ 1;
-                        var quizsubmission =await _quizSubmissionService.Add(quiz).ConfigureAwait(false);
+                        quizDetails.LoginAttempts = quizDetails.LoginAttempts + 1;
+                        var quizsubmission = await _quizSubmissionService.Add(quiz).ConfigureAwait(false);
                         await _quizService.UpdateQuizInfo(quizDetails).ConfigureAwait(false);
                         if (quizsubmission)
                         {
@@ -546,47 +591,47 @@ namespace rmsapp.rmssysapi.Controllers
                         foreach (var item in submittedQuizDetails.QuizSetList)
                         {
                             List<SubjectExpertQuestions> quizzes = new List<SubjectExpertQuestions>();
-                            quizzes = (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(item.SetNumber, item.SubjectName).ConfigureAwait(false);
+                            quizzes = (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(U.Convert(item.Version), U.Convert(item.SubjectName)).ConfigureAwait(false);
                             if (quizzes?.Count > 0)
                             {
                                 masterQuizzes.AddRange(quizzes);
                             }
                         }
                     }
-                    if (submittedQuizDetails!=null && masterQuizzes?.Count>0)
+                    if (submittedQuizDetails != null && masterQuizzes?.Count > 0)
                     {
                         submittedQuizAnswerResponses = (from x in masterQuizzes
-                                                  group x by new
-                                                  {
-                                                      x.SetNumber,
-                                                      x.SubjectName,
-                                                      x.QuestionId,
-                                                      x.Question,
-                                                      x.QuestionOptions,
-                                                      x.QuestionType
-                                                  } into g
-                                                  select new SubmittedAnswersResponse
-                                                  {
-                                                      SetNumber=g.Key.SetNumber,
-                                                      SubjectName = g.Key.SubjectName,
-                                                      QuestionId = g.Key.QuestionId,
-                                                      Question = g.Key.Question,
-                                                      QuestionOptions = g.Key.QuestionOptions,
-                                                      QuestionType = g.Key.QuestionType,
-                                                      SubmittedAnswers= submittedQuizDetails.SubmittedAnswersInfo.Where(x=>x.SubjectName== g.Key.SubjectName && x.SetNumber== g.Key.SetNumber).SelectMany(x=>x.QuizAnswersDetails)
-                                                                       .Where(x=>x.QuestionId==g.Key.QuestionId && x.QuestionType==g.Key.QuestionType).SelectMany(x=>x.SubmittedQuestionAnswers).ToArray(),
-                                                      SubmittedAnswersIds = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
-                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.SubmittedQuestionAnswerIds).ToArray(),
-                                                      MasterQuestionAnswers = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
-                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswers).ToArray(),
-                                                      MasterQuestionAnswersIds = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
-                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswerIds).ToArray(),
-                                                      IsCorrect = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.SetNumber == g.Key.SetNumber).SelectMany(x => x.QuizAnswersDetails)
-                                                                       .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).Select(x=>x.IsCorrect).SingleOrDefault()
+                                                        group x by new
+                                                        {
+                                                            x.Version,
+                                                            x.SubjectName,
+                                                            x.QuestionId,
+                                                            x.Question,
+                                                            x.QuestionOptions,
+                                                            x.QuestionType
+                                                        } into g
+                                                        select new SubmittedAnswersResponse
+                                                        {
+                                                            Version = g.Key.Version,
+                                                            SubjectName = g.Key.SubjectName,
+                                                            QuestionId = g.Key.QuestionId,
+                                                            Question = g.Key.Question,
+                                                            QuestionOptions = g.Key.QuestionOptions,
+                                                            QuestionType = g.Key.QuestionType,
+                                                            SubmittedAnswers = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.Version == g.Key.Version).SelectMany(x => x.QuizAnswersDetails)
+                                                                             .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.SubmittedQuestionAnswers).ToArray(),
+                                                            SubmittedAnswersIds = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.Version == g.Key.Version).SelectMany(x => x.QuizAnswersDetails)
+                                                                             .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.SubmittedQuestionAnswerIds).ToArray(),
+                                                            MasterQuestionAnswers = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.Version == g.Key.Version).SelectMany(x => x.QuizAnswersDetails)
+                                                                             .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswers).ToArray(),
+                                                            MasterQuestionAnswersIds = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.Version == g.Key.Version).SelectMany(x => x.QuizAnswersDetails)
+                                                                             .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).SelectMany(x => x.MasterQuestionAnswerIds).ToArray(),
+                                                            IsCorrect = submittedQuizDetails.SubmittedAnswersInfo.Where(x => x.SubjectName == g.Key.SubjectName && x.Version == g.Key.Version).SelectMany(x => x.QuizAnswersDetails)
+                                                                             .Where(x => x.QuestionId == g.Key.QuestionId && x.QuestionType == g.Key.QuestionType).Select(x => x.IsCorrect).SingleOrDefault()
 
 
 
-                                                  }).ToList();
+                                                        }).ToList();
                         if (submittedQuizAnswerResponses.Count > 0)
                         {
                             return Ok(submittedQuizAnswerResponses);
@@ -606,7 +651,7 @@ namespace rmsapp.rmssysapi.Controllers
         #region Get Submitted Quiz Info
         [HttpGet("quiz/interviewer/submitquiz")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200,Type =typeof(SubmittedQuizResponse[]))]
+        [ProducesResponseType(200, Type = typeof(SubmittedQuizResponse[]))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> GetSubmittedQuiz()
@@ -614,12 +659,12 @@ namespace rmsapp.rmssysapi.Controllers
             List<SubmittedQuizResponse> submittedQuizResponses = new List<SubmittedQuizResponse>();
             try
             {
-                    var totalSubmittedQuizDetails = await _quizSubmissionService.GetTotalQuizDetails().ConfigureAwait(false);
-                    var totalCandidates = await _candidateService.GetTotalCandidateDetails().ConfigureAwait(false);
-                    var totalQuizDetails = await _quizService.GetTotalQuizDetails().ConfigureAwait(false);
-                    if (totalQuizDetails?.Count()>0 && totalCandidates?.Count()>0)
-                    {
-                      submittedQuizResponses = (from x in totalSubmittedQuizDetails
+                var totalSubmittedQuizDetails = await _quizSubmissionService.GetTotalQuizDetails().ConfigureAwait(false);
+                var totalCandidates = await _candidateService.GetTotalCandidateDetails().ConfigureAwait(false);
+                var totalQuizDetails = await _quizService.GetTotalQuizDetails().ConfigureAwait(false);
+                if (totalQuizDetails?.Count() > 0 && totalCandidates?.Count() > 0)
+                {
+                    submittedQuizResponses = (from x in totalSubmittedQuizDetails
                                               group x by new
                                               {
                                                   x.QuizId,
@@ -636,20 +681,19 @@ namespace rmsapp.rmssysapi.Controllers
                                                   QuizId = g.Key.QuizId,
                                                   CandidateId = g.Key.CandidateId,
                                                   CreatedDate = (totalQuizDetails.Where(x => x.QuizId == g.Key.QuizId).Select(x => x.CreatedDate).SingleOrDefault())?.ToString("dd MMMM yyyy hh:mm tt"),
-                                                  InterviewLevel = totalCandidates.Where(x => x.CandidateId == g.Key.CandidateId).Select(x => x.InterviewLevel).SingleOrDefault(),
                                                   //CreatedBy= totalQuizDetails.Where(x => x.QuizId == g.Key.QuizId).Select(x => x.CreatedBy).SingleOrDefault(),
-                                                  TotalQuestions= g.Key.TotalQuestions,
+                                                  TotalQuestions = g.Key.TotalQuestions,
                                                   AnsweredQuestions = g.Key.TotalAnsweredQuestions,
                                                   NotAnsweredQuestions = g.Key.TotalUnAnsweredQuestions,
                                                   InCorrectAnswers = g.Key.TotalInCorrectAnswers,
                                                   CorrectAnswers = g.Key.TotalCorrectAnswers,
                                               }).ToList();
-                        if (submittedQuizResponses.Count>0)
-                        {
-                           return Ok(submittedQuizResponses);
-                        }
+                    if (submittedQuizResponses.Count > 0)
+                    {
+                        return Ok(submittedQuizResponses);
                     }
-                    return NoContent();
+                }
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -670,12 +714,12 @@ namespace rmsapp.rmssysapi.Controllers
             try
             {
                 var submittedQuizDetails = await _quizSubmissionService.GetQuizDetails(quizId).ConfigureAwait(false);
-                if ( submittedQuizDetails!=null)
+                if (submittedQuizDetails != null)
                 {
-                    List<QuizAnswersDetailedInfo> answersDetailedInfos= submittedQuizDetails?.SubmittedAnswersInfo?.Count>0? submittedQuizDetails.SubmittedAnswersInfo : new List<QuizAnswersDetailedInfo>();
+                    List<QuizAnswersDetailedInfo> answersDetailedInfos = submittedQuizDetails?.SubmittedAnswersInfo?.Count > 0 ? submittedQuizDetails.SubmittedAnswersInfo : new List<QuizAnswersDetailedInfo>();
                     submittedQuizAnswerResponses = answersDetailedInfos.GroupBy(x => new
                     {
-                        x.SetNumber,
+                        x.Version,
                         x.SubjectName,
                         x.TotalQuestions,
                         x.TotalAnsweredQuestions,
@@ -685,8 +729,8 @@ namespace rmsapp.rmssysapi.Controllers
                     }).Select(x => new SubmittedQuizDetailedInfo
                     {
                         QuizId = submittedQuizDetails.QuizId,
-                        SetNumber =x.Key.SetNumber,
-                        SubjectName=x.Key.SubjectName,
+                        Version = x.Key.Version,
+                        SubjectName = x.Key.SubjectName,
                         TotalQuestions = x.Key.TotalQuestions,
                         AnsweredQuestions = x.Key.TotalAnsweredQuestions,
                         NotAnsweredQuestions = x.Key.TotalUnAnsweredQuestions,
@@ -694,7 +738,7 @@ namespace rmsapp.rmssysapi.Controllers
                         CorrectAnswers = x.Key.TotalCorrectAnswers,
                     }).ToList();
 
-                    if (submittedQuizAnswerResponses.Count>0)
+                    if (submittedQuizAnswerResponses.Count > 0)
                     {
                         return Ok(submittedQuizAnswerResponses);
                     }
@@ -734,7 +778,7 @@ namespace rmsapp.rmssysapi.Controllers
             }
             if (first.Length == second.Length)
             {
-                var isEqual=new HashSet<T> (first).SetEquals(second);
+                var isEqual = new HashSet<T>(first).SetEquals(second);
                 return isEqual;
             }
             return true;

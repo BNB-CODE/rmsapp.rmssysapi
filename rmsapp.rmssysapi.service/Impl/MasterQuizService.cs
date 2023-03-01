@@ -17,11 +17,11 @@ namespace rmsapp.rmssysapi.service.Impl
         {
             _masterQuizRepository = masterQuizRepository;
         }
-        public async Task<bool> Add(int setNumber,string subjectName,IEnumerable<QuizDetails> masterQuiz)
+        public async Task<bool> Add(string version,string subjectName,IEnumerable<QuizDetails> masterQuiz)
         {
             try
             {
-                int maxQuestionId = await _masterQuizRepository.GteLatestQuestionId(setNumber, subjectName).ConfigureAwait(false);
+                int maxQuestionId = await _masterQuizRepository.GteLatestQuestionId(version, subjectName).ConfigureAwait(false);
                 List<MasterQuiz> masters = new List<MasterQuiz>();
                 foreach (var item in masterQuiz)
                 {
@@ -30,7 +30,7 @@ namespace rmsapp.rmssysapi.service.Impl
                     string[] questionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
                     
                     quiz.QuestionId = maxQuestionId + 1;
-                    quiz.SetNumber = setNumber;
+                    quiz.Version = version;
                     quiz.SubjectName = (subjectName.Trim()).ToUpper();
                     quiz.Question = item.Question;
                     quiz.QuestionType = ((item.QuestionType).Trim()).ToUpper();
@@ -63,16 +63,16 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
 
-       public async Task<List<CandidateQuestions>> GetCandidateAssignment(int set, string subject)
+       public async Task<List<CandidateQuestions>> GetCandidateAssignment(string version, string subject)
         {
 
             try
             {
-                var masterQuiz = await _masterQuizRepository.GetQuestions(set, subject);
+                var masterQuiz = await _masterQuizRepository.GetQuestions(version, subject);
                 var result = masterQuiz.Select(masterQuiz => new CandidateQuestions
                 {
                     QuestionId = masterQuiz.QuestionId,
-                    SetNumber = masterQuiz.SetNumber,
+                    Version = masterQuiz.Version,
                     SubjectName = masterQuiz.SubjectName,
                     Question = masterQuiz.Question,
                     QuestionType = masterQuiz.QuestionType,
@@ -91,14 +91,14 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
 
-        public async  Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(int set, string subject)
+        public async  Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(string version, string subject)
         {
             try
             {
-                var masterQuiz = await _masterQuizRepository.GetQuestions(set, subject);
+                var masterQuiz = await _masterQuizRepository.GetQuestions(version, subject).ConfigureAwait(false);
                 var result = masterQuiz.Select(masterQuiz => new SubjectExpertQuestions     {
                     QuestionId = masterQuiz.QuestionId,
-                    SetNumber = masterQuiz.SetNumber,
+                    Version = masterQuiz.Version,
                     SubjectName = masterQuiz.SubjectName,
                     Question = masterQuiz.Question,
                     QuestionType = masterQuiz.QuestionType,
@@ -127,18 +127,18 @@ namespace rmsapp.rmssysapi.service.Impl
                 var result = (from x in masterQuiz
                                group x by new
                                {
-                                 x.SetNumber,
+                                 x.Version,
                                  x.SubjectName,
                                  } into g
                                  select new SubjectDetails
                                  {
-                                     SetNumber = g.Key.SetNumber,
+                                     Version = g.Key.Version,
                                      SubjectName = g.Key.SubjectName,
                                      TotalQuestionsCount = g.Count(),
-                                     CreatedBy= masterQuiz.Where(x=>x.SetNumber==g.Key.SetNumber && x.SubjectName==g.Key.SubjectName).Select(x=>x.CreatedBy).FirstOrDefault(),
-                                     UpdatedBy = masterQuiz.Where(x => x.SetNumber == g.Key.SetNumber && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedBy).LastOrDefault(),
-                                     CreatedDate = masterQuiz.Where(x => x.SetNumber == g.Key.SetNumber && x.SubjectName == g.Key.SubjectName).Select(x => x.CreatedDate).FirstOrDefault(),
-                                     UpdatedDate = masterQuiz.Where(x => x.SetNumber == g.Key.SetNumber && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedDate).LastOrDefault(),
+                                     CreatedBy= masterQuiz.Where(x=>x.Version==g.Key.Version && x.SubjectName==g.Key.SubjectName).Select(x=>x.CreatedBy).FirstOrDefault(),
+                                     UpdatedBy = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedBy).LastOrDefault(),
+                                     CreatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.CreatedDate).FirstOrDefault(),
+                                     UpdatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedDate).LastOrDefault(),
                                  }).ToList();
                 return result;
             }

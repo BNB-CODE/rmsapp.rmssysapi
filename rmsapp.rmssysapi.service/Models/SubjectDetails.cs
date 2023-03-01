@@ -6,7 +6,7 @@ namespace rmsapp.rmssysapi.service.Models
     public class SubjectDetails
     {
         public string SubjectName { get; set; }
-        public int SetNumber { get; set; }
+        public string Version { get; set; }
         public int TotalQuestionsCount { get; set; }
         public string CreatedBy { get; set; }
         public string UpdatedBy { get; set; }

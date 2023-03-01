@@ -10,7 +10,7 @@ namespace rmsapp.rmssysapi.service.Models
     public class CandidateQuestions
     {
         public int QuestionId { get; set; }
-        public int SetNumber { get; set; }
+        public string Version { get; set; }
         public string SubjectName { get; set; }
         public string Question { get; set; }
         public string QuestionType { get; set; }

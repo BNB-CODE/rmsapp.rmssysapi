@@ -13,10 +13,11 @@ namespace rmsapp.rmssysapi.service.Models
         public int QuestionId { get; set; }
         [Key]
         [Column(Order = 1)]
-        public int  SetNumber { get; set; }
+        public string Version { get; set; }
         [Key]
         [Column(Order = 2)]
         public string SubjectName { get; set; }
+        public string[] Tags { get; set; }
         public string Question { get; set; }
         public string QuestionType { get; set; }
         public string[] QuestionOptions { get; set; }

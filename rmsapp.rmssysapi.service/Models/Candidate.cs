@@ -10,13 +10,8 @@ namespace rmsapp.rmssysapi.service.Models
     {
         [Key]
         public string CandidateId { get; set; }
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; }
-        public string LastName { get; set; }
+        public string CandidateName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
-        public int InterviewLevel { get; set; }
-        public string Skills { get; set; }
-        public double TotalExperience { get; set; }
     }
 }

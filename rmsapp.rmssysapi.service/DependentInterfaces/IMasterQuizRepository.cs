@@ -7,9 +7,9 @@ namespace rmsapp.rmssysapi.service.DependentInterfaces
 {
     public interface IMasterQuizRepository
     {
-        Task<int> GteLatestQuestionId(int setNumber, string subjectName);
+        Task<int> GteLatestQuestionId(string version, string subjectName);
         Task<bool> Add(IEnumerable<MasterQuiz> masterQuiz);
-        Task<IEnumerable<MasterQuiz>> GetQuestions(int set, string subject);
+        Task<IEnumerable<MasterQuiz>> GetQuestions(string version, string subjec);
         Task<IEnumerable<MasterQuiz>> GetQuizDetails(string subject);
         
         //Task<IEnumerable<MasterQuiz>> GetAllQuizDetails();

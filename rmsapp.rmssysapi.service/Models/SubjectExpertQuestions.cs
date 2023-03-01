@@ -7,8 +7,9 @@ namespace rmsapp.rmssysapi.service.Models
     public class SubjectExpertQuestions
     {
         public int QuestionId { get; set; }
-        public int SetNumber { get; set; }
+        public string Version { get; set; }
         public string SubjectName { get; set; }
+        public string[] Tags { get; set; }
         public string Question { get; set; }
         public string QuestionType { get; set; }
         public string[] QuestionOptions { get; set; }

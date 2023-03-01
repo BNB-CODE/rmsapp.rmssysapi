@@ -29,12 +29,6 @@ namespace rmsapp.rmssysapi.service.Models
             }
         }
 
-        //[Column(TypeName = "jsonb")]
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        //public ICollection<InterviewerQuizSet> QuizSets { get; set; }
-
-        //[NotMapped]
-        //public string[] QuizSetsSerialize { get; set; }
         /// <summary>
         /// Gets or sets the confirmation code for the Candidate.
         /// </summary>

@@ -1,6 +1,5 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
-using System.Text;
 
 namespace rmsapp.rmssysapi.service.Models
 {
@@ -16,7 +15,7 @@ namespace rmsapp.rmssysapi.service.Models
     public class QuizInfo
     {
         public string SubjectName { set; get; }
-        public int SetNumber { set; get; }
+        public string Version { get; set; }
         public QuizAnswer[] quizAnswers { set; get; }
     }
     public class QuizAnswer
@@ -30,7 +29,7 @@ namespace rmsapp.rmssysapi.service.Models
     public class QuizAnswersDetailedInfo
     {
         public string SubjectName { set; get; }
-        public int SetNumber { set; get; }
+        public string Version { set; get; }
         public int TotalQuestions { get; set; }
         public int TotalAnsweredQuestions { get; set; }
         public int TotalUnAnsweredQuestions { get; set; }

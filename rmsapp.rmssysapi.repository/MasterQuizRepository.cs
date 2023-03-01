@@ -18,9 +18,9 @@ namespace rmsapp.rmssysapi.repository
 
         }
         #region Lastest Master QuestionId
-        public async Task<int> GteLatestQuestionId(int setNumber, string subjectName)
+        public async Task<int> GteLatestQuestionId(string version, string subjectName)
         {
-            var total = await _dbContext.AssignmentMaster.Where(r => r.SetNumber == setNumber && r.SubjectName == subjectName.ToUpper()).ToListAsync();
+            var total = await _dbContext.AssignmentMaster.Where(r => r.Version == version.ToUpper() && r.SubjectName == subjectName.ToUpper()).ToListAsync();
             var result = total.Any() ? total.Select(x => x.QuestionId).Max() : 0;
             return result;
         }
@@ -41,9 +41,9 @@ namespace rmsapp.rmssysapi.repository
         #endregion
 
         #region Get Questions
-        public async Task<IEnumerable<MasterQuiz>> GetQuestions(int set, string subject)
+        public async Task<IEnumerable<MasterQuiz>> GetQuestions(string version, string subject)
         {
-                var questions = await _dbContext.AssignmentMaster.Where(x => x.SetNumber == set && x.SubjectName == subject && x.IsActive).ToListAsync();
+                var questions = await _dbContext.AssignmentMaster.Where(x => x.Version == version && x.SubjectName == subject).ToListAsync();
                 return questions;               
         }
 
@@ -54,11 +54,11 @@ namespace rmsapp.rmssysapi.repository
             List<MasterQuiz> questions = new List<MasterQuiz>();
             if (!string.IsNullOrEmpty(subject))
             {
-                questions = await _dbContext.AssignmentMaster.Where(x => x.SubjectName == subject && x.IsActive).ToListAsync().ConfigureAwait(false);
+                questions = await _dbContext.AssignmentMaster.Where(x => x.SubjectName == subject).ToListAsync().ConfigureAwait(false);
             }
             else
             {
-                questions = await _dbContext.AssignmentMaster.Where(x=> x.IsActive).ToListAsync().ConfigureAwait(false);
+                questions = await _dbContext.AssignmentMaster.ToListAsync().ConfigureAwait(false);
             }
             return questions;
         }

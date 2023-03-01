@@ -29,7 +29,7 @@ namespace rmsapp.rmssysapi.repository
 
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<MasterQuiz>()
-           .HasKey(c => new { c.QuestionId, c.SetNumber, c.SubjectName});
+           .HasKey(c => new { c.QuestionId, c.Version, c.SubjectName});
             modelBuilder.Entity<Candidate>()
             .HasKey(c => new { c.CandidateId});
             modelBuilder.Entity<Quiz>()
