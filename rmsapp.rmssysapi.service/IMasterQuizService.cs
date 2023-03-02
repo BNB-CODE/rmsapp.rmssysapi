@@ -9,7 +9,10 @@ namespace rmsapp.rmssysapi.service
     public interface IMasterQuizService
     {
         Task<bool> Add(string version, string subjectName,string tag, IEnumerable<QuizDetails> masterQuiz);
-        Task<List<CandidateQuestions>> GetCandidateAssignment(string version, string subject);
+        Task<bool> Update(string version, string subjectName, string tag, IEnumerable<UpdateQuizDetails> masterQuiz);
+        Task<bool> DeleteQuizSet(string version, string subjectName);
+        Task<bool> DeleteQuestion(int questionId, string version, string subjectName);
+        Task<List<CandidateQuestions>> GetCandidateAssignment(List<QuizSet> requestedQuizSets);
 
         Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(string version, string subject);
 

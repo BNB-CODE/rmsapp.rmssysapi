@@ -17,6 +17,15 @@ namespace rmsapp.rmssysapi.service.Models
         public string QuestionAnswers { get; set; }
         public string QuestionAnswerIds { get; set; }
     }
+    public class UpdateQuizDetails
+    {
+        public int QuestionId { get; set; }
+        public string Question { get; set; }
+        public string QuestionType { get; set; }
+        public string QuestionOptions { get; set; }
+        public string QuestionAnswers { get; set; }
+        public string QuestionAnswerIds { get; set; }
+    }
     public class ExcelErrors
     {
         public string Msg { get; set; }

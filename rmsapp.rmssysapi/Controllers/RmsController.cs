@@ -42,6 +42,7 @@ namespace rmsapp.rmssysapi.Controllers
             _candidateService = candidateService;
             _configuration = configuration;
         }
+
         #region Upload/Save Quiz Excel
 
         [HttpPost("quiz/import")]
@@ -98,6 +99,61 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
+        #region UpadteExisting Removing Old and Adding New  data
+        [HttpPut("quiz/import")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(QuizDetails))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> UpdateImport(string version, string subjectName, string tag, IFormFile formFile, CancellationToken cancellationToken)
+        {
+            try
+            {
+                string vesionVal = U.Convert(version);
+                string subjectVal = U.Convert(subjectName);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                {
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+                    var res=await _masterQuizService.DeleteQuizSet(vesionVal, subjectVal).ConfigureAwait(false);
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
+                }
+                if (formFile == null || formFile.Length <= 0)
+                {
+                    return BadRequest("Excel file is empty");
+                }
+
+                if (!Path.GetExtension(formFile.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("File extension Not supported");
+                }
+                var list = await _excelDataConversionService.GetMasterQuizData(formFile, cancellationToken).ConfigureAwait(false);
+                if (list.Count() > 0)
+                {
+                    var res = await _masterQuizService.Add(vesionVal, subjectVal, tag, list).ConfigureAwait(false);
+                    if (res)
+                    {
+                        return Ok();
+                    }
+                }
+                else
+                {
+                    return BadRequest("Excel file is empty");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
         #region  Download Quiz Excel Template
         [HttpGet("quiz/exportTemplate")]
         [MapToApiVersion("1.0")]
@@ -115,6 +171,129 @@ namespace rmsapp.rmssysapi.Controllers
                 var stream = _templateDownloadService.DownloadQuizTemplate();
                 string excelName = $"RMS Export Template - Quiz.xlsx";
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
+        #region Update Quiz Set
+        [HttpPut("quiz/SubjectExpert")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(QuizDetails))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> UpdateQuizSet(UpdateQuizSetRequest updateQuizSetRequest)
+        {
+            try
+            {
+                string vesionVal = U.Convert(updateQuizSetRequest?.Version);
+                string subjectVal = U.Convert(updateQuizSetRequest?.SubjectName);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                {
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
+                }
+                if (updateQuizSetRequest?.updateQuizDetails?.Count() > 0)
+                {
+                    var res = await _masterQuizService.Update(vesionVal, subjectVal, updateQuizSetRequest.Tag, updateQuizSetRequest.updateQuizDetails).ConfigureAwait(false);
+                    if (res)
+                    {
+                        return Ok();
+                    }
+                }
+                else
+                {
+                    return BadRequest("Please Provide Quiz Details");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
+        #region Delete Quiz Set
+        [HttpDelete("quiz/SubjectExpert")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> DeleteQuizSet(string version, string subject)
+        {
+            try
+            {
+                string vesionVal = U.Convert(version);
+                string subjectVal = U.Convert(subject);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                {
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
+                }
+
+                 var res = await _masterQuizService.DeleteQuizSet(vesionVal, subjectVal).ConfigureAwait(false);
+                 if (res)
+                 {
+                  return Ok();
+                 }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
+        #region Delete Question Id in Quiz Set
+        [HttpDelete("quiz/SubjectExpert/{questionId:int}")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> DeleteQuizSetQuestion(int questionId,string version, string subject)
+        {
+            try
+            {
+                string vesionVal = U.Convert(version);
+                string subjectVal = U.Convert(subject);
+                if (questionId > 0 && !string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                {
+                    if (!vesionVal.Contains('V'))
+                    {
+                        return BadRequest("Please provide  Valid version");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Please provide  Valid version or Subject");
+                }
+
+                var res = await _masterQuizService.DeleteQuestion(questionId,vesionVal, subjectVal).ConfigureAwait(false);
+                if (res)
+                {
+                    return Ok();
+                }
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -164,7 +343,7 @@ namespace rmsapp.rmssysapi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500,ex);
             }
 
         }
@@ -182,13 +361,7 @@ namespace rmsapp.rmssysapi.Controllers
             try
             {
                 string subjectVal = U.Convert(subject);
-                if (string.IsNullOrEmpty(subjectVal))
-                {
-                    return BadRequest("Please provide  Valid  Subject");
-                }
-
                 var res = await _masterQuizService.GetQuizDetails(subjectVal).ConfigureAwait(false);
-
                 if (res.Any())
                 {
                     return Ok(res);
@@ -207,20 +380,24 @@ namespace rmsapp.rmssysapi.Controllers
         [HttpGet("quiz/candidate/questions")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
-        // [ProducesResponseType(400)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> GetCandidateQuestions(string version, string subject)
+        public async Task<IActionResult> GetCandidateQuestions(QuizSet[] candidateQuizSetRequest)
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal = U.Convert(subject);
-                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
+                List<QuizSet> requestedQuizSets = new List<QuizSet>();
+                if (candidateQuizSetRequest?.Length>-1)
                 {
-                    if (!vesionVal.Contains('V'))
+                    requestedQuizSets = candidateQuizSetRequest.Select(x => new QuizSet { Version = U.Convert(x.Version), SubjectName = U.Convert(x.SubjectName) }).ToList();
+                    foreach (var quiz in requestedQuizSets)
                     {
-                        return BadRequest("Please provide  Valid version");
+                        if (!quiz.Version.Contains('V'))
+                        {
+                            return BadRequest("Please provide  Valid version");
+                        }
                     }
+
 
                 }
                 else
@@ -228,7 +405,7 @@ namespace rmsapp.rmssysapi.Controllers
                     return BadRequest("Please provide  Valid version or Subject");
                 }
 
-                var res = await _masterQuizService.GetCandidateAssignment(vesionVal, subjectVal);
+                var res = await _masterQuizService.GetCandidateAssignment(requestedQuizSets);
 
                 if (res.Any())
                 {
@@ -556,7 +733,7 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
-        #region Get Submitted Quiz Info
+        #region Get Submitted Quiz Info By QuizId
         [HttpGet("quiz/interviewer/submitquiz/{quizId:int}")]
         //[Route("Org/{id:guid}")]
         [MapToApiVersion("1.0")]
@@ -574,15 +751,8 @@ namespace rmsapp.rmssysapi.Controllers
                     List<SubjectExpertQuestions> masterQuizzes = new List<SubjectExpertQuestions>();
                     if (submittedQuizDetails != null)
                     {
-                        foreach (var item in submittedQuizDetails.QuizSetList)
-                        {
-                            List<SubjectExpertQuestions> quizzes = new List<SubjectExpertQuestions>();
-                            quizzes = (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestions(U.Convert(item.Version), U.Convert(item.SubjectName)).ConfigureAwait(false);
-                            if (quizzes?.Count > 0)
-                            {
-                                masterQuizzes.AddRange(quizzes);
-                            }
-                        }
+                        masterQuizzes = (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestionsMultipleSetsList(submittedQuizDetails.QuizSetList).ConfigureAwait(false);
+                       
                     }
                     if (submittedQuizDetails != null && masterQuizzes?.Count > 0)
                     {
@@ -686,7 +856,7 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
-        #region Get Submitted Quiz Info
+        #region Get Submitted Quiz Info with Id Total Quiz Summary with Results
         [HttpGet("quiz/interviewer/submitquizdetails/{quizId:int}")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(200, Type = typeof(SubmittedQuizDetailedInfo[]))]

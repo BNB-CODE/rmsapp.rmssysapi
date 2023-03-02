@@ -65,12 +65,90 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
 
-       public async Task<List<CandidateQuestions>> GetCandidateAssignment(string version, string subject)
+        public async Task<bool> Update(string version, string subjectName, string tag, IEnumerable<UpdateQuizDetails> masterQuiz)
+        {
+            try
+            {
+                List<MasterQuiz> masters = new List<MasterQuiz>();
+                foreach (var item in masterQuiz)
+                {
+                    MasterQuiz quiz = new MasterQuiz();
+                    string[] questionOptions = !string.IsNullOrEmpty(item.QuestionOptions) ? ((item.QuestionOptions).Split(',')).Select(t => t).ToArray() : null;
+                    string[] questionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
+
+                    quiz.QuestionId = item.QuestionId;
+                    quiz.Version = U.Convert(version);
+                    quiz.SubjectName = U.Convert(subjectName);
+                    quiz.Tag = tag;
+                    quiz.Question = item.Question;
+                    quiz.QuestionType = ((item.QuestionType).Trim()).ToUpper();
+                    quiz.QuestionOptions = !string.IsNullOrEmpty(item.QuestionOptions) ? ((item.QuestionOptions).Split(',')).Select(t => t).ToArray() : null;
+                    quiz.QuestionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
+                    if (questionOptions.Length > 0 && questionAnswers.Length > 0)
+                    {
+                        string[] questionAnswerIds = GetAnswerIds(questionOptions, questionAnswers).ToArray();
+                        quiz.QuestionAnswersIds = questionAnswerIds;
+                    }
+                    quiz.UpdatedDate = DateTime.Now;
+                    quiz.IsActive = true;
+                    //quiz.UpdatedBy= urrentuser
+                    masters.Add(quiz);
+                }
+                var result = await _masterQuizRepository.Update(masters).ConfigureAwait(false);
+                return result;
+
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::Update:: Update MasterQuizSerice failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::Update:: Update MasterQuizSerice failed {ex.Message}");
+            }
+        }
+        public async Task<bool> DeleteQuizSet(string version, string subjectName)
         {
 
             try
             {
-                var masterQuiz = await _masterQuizRepository.GetQuestions(version, subject);
+                var result = await _masterQuizRepository.DeleteQuizSet(version, subjectName).ConfigureAwait(false);
+                return result;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::DeleteQuizSet:: Delete Quiz set  failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::DeleteQuizSet:: Delete Quiz set failed {ex.Message}");
+            }
+
+        }
+        public async Task<bool> DeleteQuestion(int questionId, string version, string subjectName)
+        {
+
+            try
+            {
+                var result = await _masterQuizRepository.DeleteQuizSet(version, subjectName).ConfigureAwait(false);
+                return result;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::DeleteQuestion:: Delete question in Quiz Set failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::DeleteQuestion:: Delete question in Quiz Set failed {ex.Message}");
+            }
+
+        }
+        public async Task<List<CandidateQuestions>> GetCandidateAssignment(List<QuizSet> requestedQuizSets)
+        {
+
+            try
+            {
+                var masterQuiz = await _masterQuizRepository.GetQuestions(requestedQuizSets).ConfigureAwait(false);
                 var result = masterQuiz.Select(masterQuiz => new CandidateQuestions
                 {
                     QuestionId = masterQuiz.QuestionId,
