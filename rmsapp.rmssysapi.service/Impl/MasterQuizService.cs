@@ -143,12 +143,12 @@ namespace rmsapp.rmssysapi.service.Impl
             }
 
         }
-        public async Task<List<CandidateQuestions>> GetCandidateAssignment(List<QuizSet> requestedQuizSets)
+        public async Task<List<CandidateQuestions>> GetCandidateAssignment(string version, string subject)
         {
 
             try
             {
-                var masterQuiz = await _masterQuizRepository.GetQuestions(requestedQuizSets).ConfigureAwait(false);
+                var masterQuiz = await _masterQuizRepository.GetQuestions(version, subject).ConfigureAwait(false);
                 var result = masterQuiz.Select(masterQuiz => new CandidateQuestions
                 {
                     QuestionId = masterQuiz.QuestionId,
@@ -170,7 +170,6 @@ namespace rmsapp.rmssysapi.service.Impl
                 throw new Exception($"MasterQuizSerice::getCandidateAssignment:: Get Assignment failed {ex.Message}");
             }
         }
-
         public async  Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(string version, string subject)
         {
             try
@@ -184,7 +183,8 @@ namespace rmsapp.rmssysapi.service.Impl
                     QuestionType = masterQuiz.QuestionType,
                     QuestionOptions = masterQuiz.QuestionOptions,
                     QuestionAnswers= masterQuiz.QuestionAnswers,
-                    QuestionAnswersIds= masterQuiz.QuestionAnswersIds
+                    QuestionAnswersIds= masterQuiz.QuestionAnswersIds,
+                    Tag=masterQuiz.Tag
                 }).ToList();
 
                 return result;

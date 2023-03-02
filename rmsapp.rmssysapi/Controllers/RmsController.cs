@@ -56,6 +56,7 @@ namespace rmsapp.rmssysapi.Controllers
             {
                 string vesionVal = U.Convert(version);
                 string subjectVal= U.Convert(subjectName);
+                string tagVal = U.Convert(tag);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -80,7 +81,7 @@ namespace rmsapp.rmssysapi.Controllers
                 var list = await _excelDataConversionService.GetMasterQuizData(formFile, cancellationToken).ConfigureAwait(false);
                 if (list.Count() > 0)
                 {
-                    var res = await _masterQuizService.Add(vesionVal, subjectVal,tag, list).ConfigureAwait(false);
+                    var res = await _masterQuizService.Add(vesionVal, subjectVal, tagVal, list).ConfigureAwait(false);
                     if (res)
                     {
                         return Ok();
@@ -111,6 +112,7 @@ namespace rmsapp.rmssysapi.Controllers
             {
                 string vesionVal = U.Convert(version);
                 string subjectVal = U.Convert(subjectName);
+                string tagVal = U.Convert(tag);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -135,7 +137,7 @@ namespace rmsapp.rmssysapi.Controllers
                 var list = await _excelDataConversionService.GetMasterQuizData(formFile, cancellationToken).ConfigureAwait(false);
                 if (list.Count() > 0)
                 {
-                    var res = await _masterQuizService.Add(vesionVal, subjectVal, tag, list).ConfigureAwait(false);
+                    var res = await _masterQuizService.Add(vesionVal, subjectVal, tagVal, list).ConfigureAwait(false);
                     if (res)
                     {
                         return Ok();
@@ -191,6 +193,7 @@ namespace rmsapp.rmssysapi.Controllers
             {
                 string vesionVal = U.Convert(updateQuizSetRequest?.Version);
                 string subjectVal = U.Convert(updateQuizSetRequest?.SubjectName);
+                string tagVal = U.Convert(updateQuizSetRequest?.Tag);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -205,7 +208,7 @@ namespace rmsapp.rmssysapi.Controllers
                 }
                 if (updateQuizSetRequest?.updateQuizDetails?.Count() > 0)
                 {
-                    var res = await _masterQuizService.Update(vesionVal, subjectVal, updateQuizSetRequest.Tag, updateQuizSetRequest.updateQuizDetails).ConfigureAwait(false);
+                    var res = await _masterQuizService.Update(vesionVal, subjectVal, tagVal, updateQuizSetRequest.updateQuizDetails).ConfigureAwait(false);
                     if (res)
                     {
                         return Ok();
@@ -327,10 +330,6 @@ namespace rmsapp.rmssysapi.Controllers
                 {
                     return BadRequest("Please provide  Valid version or Subject");
                 }
-                if (!string.IsNullOrEmpty(subject))
-                {
-                    subject = subject.ToUpper();
-                }
 
                 var res = await _masterQuizService.GetMasterQuestions(vesionVal, subjectVal);
 
@@ -382,30 +381,24 @@ namespace rmsapp.rmssysapi.Controllers
         [ProducesResponseType(200, Type = typeof(CandidateQuestions[]))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> GetCandidateQuestions(QuizSet[] candidateQuizSetRequest)
+        public async Task<IActionResult> GetCandidateQuestions(string version, string subject)
         {
             try
             {
-                List<QuizSet> requestedQuizSets = new List<QuizSet>();
-                if (candidateQuizSetRequest?.Length>-1)
+                string vesionVal = U.Convert(version);
+                string subjectVal = U.Convert(subject);
+                if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
-                    requestedQuizSets = candidateQuizSetRequest.Select(x => new QuizSet { Version = U.Convert(x.Version), SubjectName = U.Convert(x.SubjectName) }).ToList();
-                    foreach (var quiz in requestedQuizSets)
+                    if (!vesionVal.Contains('V'))
                     {
-                        if (!quiz.Version.Contains('V'))
-                        {
-                            return BadRequest("Please provide  Valid version");
-                        }
+                        return BadRequest("Please provide  Valid version");
                     }
-
-
                 }
                 else
                 {
                     return BadRequest("Please provide  Valid version or Subject");
                 }
-
-                var res = await _masterQuizService.GetCandidateAssignment(requestedQuizSets);
+                var res = await _masterQuizService.GetCandidateAssignment(vesionVal, subjectVal).ConfigureAwait(false);
 
                 if (res.Any())
                 {
