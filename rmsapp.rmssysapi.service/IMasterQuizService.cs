@@ -13,6 +13,8 @@ namespace rmsapp.rmssysapi.service
         Task<bool> DeleteQuizSet(string version, string subjectName);
         Task<bool> DeleteQuestion(int questionId, string version, string subjectName);
         Task<List<CandidateQuestions>> GetCandidateAssignment(string version, string subject);
+
+        Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestionsBySearch(List<string> searcKeys);
         Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestions(string version, string subject);
 
         Task<IEnumerable<SubjectDetails>> GetQuizDetails(string subject);

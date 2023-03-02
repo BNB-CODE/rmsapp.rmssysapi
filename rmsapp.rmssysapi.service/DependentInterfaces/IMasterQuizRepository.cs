@@ -17,6 +17,7 @@ namespace rmsapp.rmssysapi.service.DependentInterfaces
         Task<IEnumerable<MasterQuiz>> GetQuizDetails(string subject);
 
         Task<IEnumerable<MasterQuiz>> GetMultipleSetQuestionsList(List<InterviewerQuizSet> interviewerQuizzes);
+        Task<IEnumerable<MasterQuiz>> GetMultipleSetQuestionsList(List<string> searcKeys);
 
         //Task<IEnumerable<MasterQuiz>> GetAllQuizDetails();
         //Task<bool> Update(MasterQuiz masterQuiz);

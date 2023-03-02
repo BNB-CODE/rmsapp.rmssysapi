@@ -30,7 +30,7 @@ namespace workforceapp.workforcesysapi.Service.Utils
 
     public partial class U
     {
-        static public UpperCaseFormat Convert(string value)
+        static public UpperCaseFormat Normalize(string value)
         {
             return new UpperCaseFormat(value);
         }

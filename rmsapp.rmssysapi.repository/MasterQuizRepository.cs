@@ -46,11 +46,14 @@ namespace rmsapp.rmssysapi.repository
             bool result = false;
             if (masterQuiz?.Count() > 0)
             {
-                string version = U.Convert(masterQuiz.Select(x => x.Version).FirstOrDefault());
-                string subject = U.Convert(masterQuiz.Select(x => x.SubjectName).FirstOrDefault());
+                
+                string version = U.Normalize(masterQuiz.Select(x => x.Version).FirstOrDefault());
+                string subject = U.Normalize(masterQuiz.Select(x => x.SubjectName).FirstOrDefault());
+                IEnumerable<MasterQuiz> totalMasterQuizs = await _dbContext.AssignmentMaster.Where(x => x.Version == version && x.SubjectName == subject && x.IsActive).OrderBy(x => x.QuestionId).ToListAsync().ConfigureAwait(false);
+                string tagVal=string.IsNullOrEmpty(masterQuiz.Select(x=>x.Tag).FirstOrDefault()) ? totalMasterQuizs.Select(x => x.Tag).FirstOrDefault() : U.Normalize(masterQuiz.Select(x => x.Tag).FirstOrDefault());
                 //List<int> questionIds = masterQuiz.Select(x => x.QuestionId).ToList();
                 List<MasterQuiz> updateQuizzes = new List<MasterQuiz>();
-                foreach (var updateQuiz in _dbContext.AssignmentMaster.Where(x=>x.Version== version && x.SubjectName==subject && x.IsActive).OrderBy(x=>x.QuestionId).ToList())
+                foreach (var updateQuiz in totalMasterQuizs)
                 {
                     MasterQuiz modifiedQuiz = masterQuiz.Where(x => x.QuestionId == updateQuiz.QuestionId).SingleOrDefault();
                     if (modifiedQuiz!=null)
@@ -63,13 +66,14 @@ namespace rmsapp.rmssysapi.repository
                         updateQuiz.IsActive = modifiedQuiz.IsActive;
                         updateQuiz.UpdatedBy = modifiedQuiz.UpdatedBy;
                         updateQuiz.UpdatedDate = modifiedQuiz.UpdatedDate;
-                        updateQuiz.Tag = string.IsNullOrEmpty(modifiedQuiz.Tag) ? updateQuiz.Tag : modifiedQuiz.Tag;
+                        updateQuiz.Tag = tagVal;
                         updateQuizzes.Add(updateQuiz);
                     }
                 }
                 if (updateQuizzes.Count>0)
                 {
                     _dbContext.AssignmentMaster.UpdateRange(updateQuizzes);
+                    //_dbContext.AssignmentMaster.UpdateRange(_dbContext.AssignmentMaster.Where(x => x.Version == version && x.SubjectName == subject && x.IsActive).ForEachAsync(x=>x.Tag= tagVal).);
                     await _dbContext.SaveChangesAsync();
                     result = true;
                 }
@@ -122,7 +126,7 @@ namespace rmsapp.rmssysapi.repository
             {
                 foreach (var item in requestedQuizSets)
                 {
-                    List<MasterQuiz> MasterQuiz = await _dbContext.AssignmentMaster.Where(x => x.Version == U.Convert(item.Version) && x.SubjectName == U.Convert(item.SubjectName) && x.IsActive).ToListAsync().ConfigureAwait(false);
+                    List<MasterQuiz> MasterQuiz = await _dbContext.AssignmentMaster.Where(x => x.Version == U.Normalize(item.Version) && x.SubjectName == U.Normalize(item.SubjectName) && x.IsActive).ToListAsync().ConfigureAwait(false);
                     if (MasterQuiz.Count > 0)
                     {
                         masterQuizzes.AddRange(MasterQuiz);
@@ -157,10 +161,28 @@ namespace rmsapp.rmssysapi.repository
             {
                 foreach (var item in interviewerQuizzes)
                 {
-                    List<MasterQuiz> MasterQuiz = await _dbContext.AssignmentMaster.Where(x =>item.QuestionIds.Contains(x.QuestionId)&& x.Version ==U.Convert(item.Version) && x.SubjectName == U.Convert(item.SubjectName) && x.IsActive).ToListAsync().ConfigureAwait(false);
+                    List<MasterQuiz> MasterQuiz = await _dbContext.AssignmentMaster.Where(x =>item.QuestionIds.Contains(x.QuestionId)&& x.Version ==U.Normalize(item.Version) && x.SubjectName == U.Normalize(item.SubjectName) && x.IsActive).ToListAsync().ConfigureAwait(false);
                     if (MasterQuiz.Count>0) {
                         masterQuizzes.AddRange(MasterQuiz);
                     } 
+                }
+            }
+            return masterQuizzes;
+        }
+        #endregion
+        #region  Get Total Questions info Based on Search Query
+        public async Task<IEnumerable<MasterQuiz>> GetMultipleSetQuestionsList(List<string> searcKeys)
+        {
+            List<MasterQuiz> masterQuizzes = new List<MasterQuiz>();
+            if (searcKeys?.Count > 0)
+            {
+                foreach (var item in searcKeys)
+                {
+                    List<MasterQuiz> MasterQuiz = await _dbContext.AssignmentMaster.Where(x => (x.SubjectName.Contains(U.Normalize(item)) || x.Tag.Contains(U.Normalize(item)) )&& x.IsActive).ToListAsync().ConfigureAwait(false);
+                    if (MasterQuiz.Count > 0)
+                    {
+                        masterQuizzes.AddRange(MasterQuiz);
+                    }
                 }
             }
             return masterQuizzes;

@@ -31,8 +31,8 @@ namespace rmsapp.rmssysapi.service.Impl
                     string[] questionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
                     
                     quiz.QuestionId = maxQuestionId + 1;
-                    quiz.Version = U.Convert(version);
-                    quiz.SubjectName =U.Convert(subjectName);
+                    quiz.Version = U.Normalize(version);
+                    quiz.SubjectName =U.Normalize(subjectName);
                     quiz.Tag = tag;
                     quiz.Question = item.Question;
                     quiz.QuestionType = ((item.QuestionType).Trim()).ToUpper();
@@ -77,8 +77,8 @@ namespace rmsapp.rmssysapi.service.Impl
                     string[] questionAnswers = !string.IsNullOrEmpty(item.QuestionAnswers) ? ((item.QuestionAnswers).Split(',')).Select(t => t).ToArray() : null;
 
                     quiz.QuestionId = item.QuestionId;
-                    quiz.Version = U.Convert(version);
-                    quiz.SubjectName = U.Convert(subjectName);
+                    quiz.Version = U.Normalize(version);
+                    quiz.SubjectName = U.Normalize(subjectName);
                     quiz.Tag = tag;
                     quiz.Question = item.Question;
                     quiz.QuestionType = ((item.QuestionType).Trim()).ToUpper();
@@ -130,7 +130,7 @@ namespace rmsapp.rmssysapi.service.Impl
 
             try
             {
-                var result = await _masterQuizRepository.DeleteQuizSet(version, subjectName).ConfigureAwait(false);
+                var result = await _masterQuizRepository.DeleteQuestion(questionId,version, subjectName).ConfigureAwait(false);
                 return result;
             }
             catch (NpgsqlException ex)
@@ -288,7 +288,8 @@ namespace rmsapp.rmssysapi.service.Impl
                     QuestionType = masterQuiz.QuestionType,
                     QuestionOptions = masterQuiz.QuestionOptions,
                     QuestionAnswers = masterQuiz.QuestionAnswers,
-                    QuestionAnswersIds = masterQuiz.QuestionAnswersIds
+                    QuestionAnswersIds = masterQuiz.QuestionAnswersIds,
+                    Tag=masterQuiz.Tag
                 }).ToList();
 
                 return result;
@@ -302,6 +303,36 @@ namespace rmsapp.rmssysapi.service.Impl
                 throw new Exception($"MasterQuizSerice::GetMasterQuestionsMultipleSetsList:: GetMasterQuestionsMultipleSetsList failed {ex.Message}");
             }
 
+        }
+
+        public async Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestionsBySearch(List<string> searcKeys)
+        {
+            try
+            {
+                var masterQuiz = await _masterQuizRepository.GetMultipleSetQuestionsList(searcKeys).ConfigureAwait(false);
+                var result = masterQuiz.Select(masterQuiz => new SubjectExpertQuestions
+                {
+                    QuestionId = masterQuiz.QuestionId,
+                    Version = masterQuiz.Version,
+                    SubjectName = masterQuiz.SubjectName,
+                    Question = masterQuiz.Question,
+                    QuestionType = masterQuiz.QuestionType,
+                    QuestionOptions = masterQuiz.QuestionOptions,
+                    QuestionAnswers = masterQuiz.QuestionAnswers,
+                    QuestionAnswersIds = masterQuiz.QuestionAnswersIds,
+                    Tag = masterQuiz.Tag
+                }).ToList();
+
+                return result;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetMasterQuestionsMultipleSetsList:: GetMasterQuestionsMultipleSetsList failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"MasterQuizSerice::GetMasterQuestionsMultipleSetsList:: GetMasterQuestionsMultipleSetsList failed {ex.Message}");
+            }
         }
     }
 }

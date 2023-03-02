@@ -54,9 +54,9 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal= U.Convert(subjectName);
-                string tagVal = U.Convert(tag);
+                string vesionVal = U.Normalize(version);
+                string subjectVal= U.Normalize(subjectName);
+                string tagVal = U.Normalize(tag);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -110,9 +110,9 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal = U.Convert(subjectName);
-                string tagVal = U.Convert(tag);
+                string vesionVal = U.Normalize(version);
+                string subjectVal = U.Normalize(subjectName);
+                string tagVal = U.Normalize(tag);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -191,9 +191,9 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string vesionVal = U.Convert(updateQuizSetRequest?.Version);
-                string subjectVal = U.Convert(updateQuizSetRequest?.SubjectName);
-                string tagVal = U.Convert(updateQuizSetRequest?.Tag);
+                string vesionVal = U.Normalize(updateQuizSetRequest?.Version);
+                string subjectVal = U.Normalize(updateQuizSetRequest?.SubjectName);
+                string tagVal = U.Normalize(updateQuizSetRequest?.Tag);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -237,8 +237,8 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal = U.Convert(subject);
+                string vesionVal = U.Normalize(version);
+                string subjectVal = U.Normalize(subject);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -276,8 +276,8 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal = U.Convert(subject);
+                string vesionVal = U.Normalize(version);
+                string subjectVal = U.Normalize(subject);
                 if (questionId > 0 && !string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -305,19 +305,86 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
+        #region Serach With Key Words
+        [HttpPut("quiz/SubjectExpert/questions/filter")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions[]))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> GetFilteredSubjectExpertQuestions(string[] searchKeys)
+        {
+            try
+            {
+                List<string> searchKeyvalues = searchKeys.ToList();
+                if (searchKeyvalues.Count==0)
+                {
+                   return BadRequest("Please provide  Valid SearchKey");
+                }
+                var res = await _masterQuizService.GetMasterQuestionsBySearch(searchKeyvalues).ConfigureAwait(false);
+
+                if (res.Any())
+                {
+                    return Ok(res);
+                }
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+
+        }
+
+        #endregion
+
+        #region Get Subject Expert Questions With Created Quiz
+        [HttpPut("quiz/SubjectExpert/questions/fetch")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions[]))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> GetSubjectExpertQuizSet(InterviewerQuizSet[] interviewerQuizSets)
+        {
+            try
+            {
+                List<InterviewerQuizSet> interviewerQuizSetsValues = interviewerQuizSets.Select(X=>new InterviewerQuizSet
+                {QuestionIds=X.QuestionIds,SubjectName=U.Normalize(X.SubjectName),Version=U.Normalize(X.Version) }).ToList();
+                if (interviewerQuizSetsValues.Count == 0)
+                {
+                    return BadRequest("Please provide  Valid SearchKey");
+                }
+                var res = await _masterQuizService.GetMasterQuestionsMultipleSetsList(interviewerQuizSetsValues).ConfigureAwait(false);
+
+                if (res.Any())
+                {
+                    return Ok(res);
+                }
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+
+        }
+
+        #endregion
+
         #region Get Invidiual Subject and Set Wise total Info
 
         [HttpGet("quiz/SubjectExpert/questions")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions))]
-        // [ProducesResponseType(400)]
+        [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions[]))]
+        [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> GetSubjectExpertQuestions(string version, string subject)
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal = U.Convert(subject);
+                string vesionVal = U.Normalize(version);
+                string subjectVal = U.Normalize(subject);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -359,7 +426,7 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string subjectVal = U.Convert(subject);
+                string subjectVal = U.Normalize(subject);
                 var res = await _masterQuizService.GetQuizDetails(subjectVal).ConfigureAwait(false);
                 if (res.Any())
                 {
@@ -385,8 +452,8 @@ namespace rmsapp.rmssysapi.Controllers
         {
             try
             {
-                string vesionVal = U.Convert(version);
-                string subjectVal = U.Convert(subject);
+                string vesionVal = U.Normalize(version);
+                string subjectVal = U.Normalize(subject);
                 if (!string.IsNullOrEmpty(vesionVal) && !string.IsNullOrEmpty(subjectVal))
                 {
                     if (!vesionVal.Contains('V'))
@@ -441,7 +508,7 @@ namespace rmsapp.rmssysapi.Controllers
                         QuizTopic=interviewerQuizRequest.QuizTopic,
                         ConfirmationCodeExpiration = confirmationCodeExpiration,
                         QuizSetList = interviewerQuizRequest?.QuizSetWiseInfo.Length>-1? interviewerQuizRequest.QuizSetWiseInfo.Select(x=>new InterviewerQuizSet {
-                        QuestionIds=x.QuestionIds.ToArray(),Version=U.Convert(x.Version),SubjectName=U.Convert(x.SubjectName)}).ToList()
+                        QuestionIds=x.QuestionIds.ToArray(),Version=U.Normalize(x.Version),SubjectName=U.Normalize(x.SubjectName)}).ToList()
                         : new List<InterviewerQuizSet>()
                         //CreatedBy= Currentuser
                     };
