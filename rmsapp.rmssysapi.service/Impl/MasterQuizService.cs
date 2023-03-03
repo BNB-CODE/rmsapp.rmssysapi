@@ -208,12 +208,13 @@ namespace rmsapp.rmssysapi.service.Impl
                                group x by new
                                {
                                  x.Version,
-                                 x.SubjectName,
+                                 x.SubjectName
                                  } into g
                                  select new SubjectDetails
                                  {
                                      Version = g.Key.Version,
                                      SubjectName = g.Key.SubjectName,
+                                     Tag= masterQuiz.Select(x=>x.Tag).FirstOrDefault(),
                                      TotalQuestionsCount = g.Count(),
                                      CreatedBy= masterQuiz.Where(x=>x.Version==g.Key.Version && x.SubjectName==g.Key.SubjectName).Select(x=>x.CreatedBy).FirstOrDefault(),
                                      UpdatedBy = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedBy).LastOrDefault(),

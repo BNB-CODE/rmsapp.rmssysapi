@@ -49,7 +49,7 @@ namespace rmsapp.rmssysapi.repository
                 
                 string version = U.Normalize(masterQuiz.Select(x => x.Version).FirstOrDefault());
                 string subject = U.Normalize(masterQuiz.Select(x => x.SubjectName).FirstOrDefault());
-                IEnumerable<MasterQuiz> totalMasterQuizs = await _dbContext.AssignmentMaster.Where(x => x.Version == version && x.SubjectName == subject && x.IsActive).OrderBy(x => x.QuestionId).ToListAsync().ConfigureAwait(false);
+                List<MasterQuiz> totalMasterQuizs = await _dbContext.AssignmentMaster.Where(x => x.Version == version && x.SubjectName == subject && x.IsActive).OrderBy(x => x.QuestionId).ToListAsync().ConfigureAwait(false);
                 string tagVal=string.IsNullOrEmpty(masterQuiz.Select(x=>x.Tag).FirstOrDefault()) ? totalMasterQuizs.Select(x => x.Tag).FirstOrDefault() : U.Normalize(masterQuiz.Select(x => x.Tag).FirstOrDefault());
                 //List<int> questionIds = masterQuiz.Select(x => x.QuestionId).ToList();
                 List<MasterQuiz> updateQuizzes = new List<MasterQuiz>();
@@ -72,6 +72,7 @@ namespace rmsapp.rmssysapi.repository
                 }
                 if (updateQuizzes.Count>0)
                 {
+                    totalMasterQuizs.ForEach(x => x.Tag = tagVal);
                     _dbContext.AssignmentMaster.UpdateRange(updateQuizzes);
                     //_dbContext.AssignmentMaster.UpdateRange(_dbContext.AssignmentMaster.Where(x => x.Version == version && x.SubjectName == subject && x.IsActive).ForEachAsync(x=>x.Tag= tagVal).);
                     await _dbContext.SaveChangesAsync();
