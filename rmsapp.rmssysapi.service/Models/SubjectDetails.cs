@@ -7,6 +7,7 @@ namespace rmsapp.rmssysapi.service.Models
     {
         public string SubjectName { get; set; }
         public string Version { get; set; }
+        public string Tag { get; set; }
         public int TotalQuestionsCount { get; set; }
         public string CreatedBy { get; set; }
         public string UpdatedBy { get; set; }

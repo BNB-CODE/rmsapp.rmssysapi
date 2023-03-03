@@ -21,4 +21,13 @@ namespace rmsapp.rmssysapi.service.Models
         public int QuizLinkExpireInHours { get; set; }
         public InterviewerQuizSet[] QuizSetWiseInfo { get; set; }
     }
+    public class EditQuizRequest
+    {
+        public int QuizId { get; set; }
+        public string QuizTopic { get; set; }
+        public int TotalQuestions { get; set; }
+        public int QuizTimeInMinutes { get; set; }
+        public int QuizLinkExpireInHours { get; set; }
+        public InterviewerQuizSet[] QuizSetWiseInfo { get; set; }
+    }
 }

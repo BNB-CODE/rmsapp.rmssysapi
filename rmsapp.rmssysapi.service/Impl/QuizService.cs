@@ -36,6 +36,8 @@ namespace rmsapp.rmssysapi.service.Impl
         }
         #endregion
 
+        
+
         #region Save Quiz info
         public async Task<bool> Add(Quiz quiz)
         {
@@ -54,6 +56,27 @@ namespace rmsapp.rmssysapi.service.Impl
             }
         }
         #endregion
+
+        #region Update Interviewer Quiz info
+        public async Task<bool> UpdateQuizInfoByInterviewer(Quiz quiz)
+        {
+            try
+            {
+                var res = await _quizRepository.UpdateQuizInfoByInterviewer(quiz).ConfigureAwait(false);
+                return res;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new Exception($"QuizService::UpdateQuizInfoByInterviewer:: Update QuizSerice failed {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"QuizService::UpdateQuizInfoByInterviewer:: Update QuizSerice failed {ex.Message}");
+            }
+
+        }
+        #endregion
+
         #region Update Quiz info
         public async Task<bool> UpdateQuizInfo(Quiz quiz)
         {

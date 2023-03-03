@@ -39,6 +39,33 @@ namespace rmsapp.rmssysapi.repository
             return result;
         }
         #endregion
+        #region Update Quiz info By Interviewer
+        public async Task<bool> UpdateQuizInfoByInterviewer(Quiz quiz)
+        {
+            bool result = false;
+            if (quiz != null)
+            {
+                Quiz existingQuiz = await _dbContext.Quizzes.Where(x => x.QuizId == quiz.QuizId && x.IsActive).SingleOrDefaultAsync();
+                if (existingQuiz != null)
+                {
+                    existingQuiz.QuizSetList = quiz.QuizSetList;
+                    existingQuiz.QuizSets = quiz.QuizSets;
+                    existingQuiz.ConfirmationCode = quiz.ConfirmationCode;
+                    existingQuiz.ConfirmationCodeExpiration = quiz.ConfirmationCodeExpiration;
+                    existingQuiz.QuizTimeInMinutes = quiz.QuizTimeInMinutes;
+                    existingQuiz.TotalQuestions = quiz.TotalQuestions;
+                    existingQuiz.QuizTopic = quiz.QuizTopic;
+                    existingQuiz.UpdatedBy = quiz.UpdatedBy;
+                    existingQuiz.UpdatedDate = quiz.UpdatedDate;
+                    
+                    _dbContext.Quizzes.Update(existingQuiz);
+                    await _dbContext.SaveChangesAsync();
+                    result = true;
+                }
+            }
+            return result;
+        }
+        #endregion
         #region Update Quiz info
         public async Task<bool> UpdateQuizInfo(Quiz quiz)
         {

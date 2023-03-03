@@ -308,7 +308,7 @@ namespace rmsapp.rmssysapi.Controllers
         #region Serach With Key Words
         [HttpPut("quiz/SubjectExpert/questions/filter")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(SubjectExpertQuestions[]))]
+        [ProducesResponseType(200, Type = typeof(SubjectDetails[][]))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> GetFilteredSubjectExpertQuestions(string[] searchKeys)
@@ -542,6 +542,66 @@ namespace rmsapp.rmssysapi.Controllers
         }
         #endregion
 
+        #region Edit  Quiz
+        [HttpPut("quiz/interviewer/createquiz")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(200, Type = typeof(InterviewerQuizResponse))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> Editquiz(EditQuizRequest interviewerQuizRequest)
+        {
+            InterviewerQuizResponse quizResponse = new InterviewerQuizResponse();
+
+            try
+            {
+                if (interviewerQuizRequest!=null && interviewerQuizRequest?.QuizSetWiseInfo?.Length!=-1 && interviewerQuizRequest.TotalQuestions>0)
+                {
+                    var (confirmationCode, confirmationCodeExpiration) = GetInvitationCode(interviewerQuizRequest.QuizLinkExpireInHours);
+                    Quiz quiz = new Quiz()
+                    {
+                        QuizId = interviewerQuizRequest.QuizId,
+                        UpdatedDate = DateTime.Now,
+                        //UpdatedBy= Currentuser
+                        IsActive = true,
+                        ConfirmationCode = confirmationCode,
+                        TotalQuestions=interviewerQuizRequest.TotalQuestions,
+                        QuizTimeInMinutes = interviewerQuizRequest.QuizTimeInMinutes,
+                        QuizTopic=interviewerQuizRequest.QuizTopic,
+                        ConfirmationCodeExpiration = confirmationCodeExpiration,
+                        QuizSetList = interviewerQuizRequest?.QuizSetWiseInfo.Length>-1? interviewerQuizRequest.QuizSetWiseInfo.Select(x=>new InterviewerQuizSet {
+                        QuestionIds=x.QuestionIds.ToArray(),Version=U.Normalize(x.Version),SubjectName=U.Normalize(x.SubjectName)}).ToList()
+                        : new List<InterviewerQuizSet>()
+                    };
+                    var res = await _quizService.UpdateQuizInfoByInterviewer(quiz).ConfigureAwait(false);
+                    if (res)
+                    {
+                        var quizDetails = await _quizService.GetQuizDetails(quiz.QuizId).ConfigureAwait(false);
+                        if (quizResponse != null)
+                        {
+                            quizResponse.QuizId = quizDetails.QuizId;
+                            quizResponse.QuizLink = quizDetails.ConfirmationCode;
+                            quizResponse.QuizLinkExpiresAt = quizDetails.ConfirmationCodeExpiration;
+                        }
+
+                        return Ok(quizResponse);
+                    }
+                    else
+                    {
+                        return NoContent();
+                    }
+                }
+                else
+                {
+                    return BadRequest("Please Add Quiz Details");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+        #endregion
+
         #region Get Total Created Quiz Details
         [HttpGet("quiz/interviewer/quizdetails")]
         [MapToApiVersion("1.0")]
@@ -717,23 +777,23 @@ namespace rmsapp.rmssysapi.Controllers
                         List<QuizInfo> subMittedQuizInfo = quizSumissionRequest.Data?.Count() > 0 ? quizSumissionRequest.Data : new List<QuizInfo>();
                         List<SubjectExpertQuestions> masterQuizzes = new List<SubjectExpertQuestions>();
                         List<QuizAnswersDetailedInfo> submittedAnswers = new List<QuizAnswersDetailedInfo>();
-                        foreach (var item in quizDetails.QuizSetList)
-                        {
-                            masterQuizzes= (List<SubjectExpertQuestions>)await _masterQuizService.GetCandidateAssignmentMultipleSetsList(quizDetails.QuizSetList).ConfigureAwait(false);
-                        }
+                         masterQuizzes= (List<SubjectExpertQuestions>)await _masterQuizService.GetMasterQuestionsMultipleSetsList(quizDetails.QuizSetList).ConfigureAwait(false);
                         if (masterQuizzes?.Count > 0 && subMittedQuizInfo?.Count > 0)
                         {
                             foreach (var quizInfo in subMittedQuizInfo)
                             {
                                 QuizAnswersDetailedInfo answersDetailedInfo = new QuizAnswersDetailedInfo();
-                                List<QuizAnswer> subjectWiseSetDetails = quizInfo.quizAnswers.ToList();
-                                answersDetailedInfo.Version = quizInfo.Version;
-                                answersDetailedInfo.SubjectName = quizInfo.SubjectName;
-                                answersDetailedInfo.TotalQuestions = subjectWiseSetDetails.Count();
-                                answersDetailedInfo.TotalAnsweredQuestions = subjectWiseSetDetails.Where(x => x.QuestionAnswerIds.Count() > 0 && x.QuestionAnswers.Count() > 0).Count();
-                                answersDetailedInfo.TotalUnAnsweredQuestions = subjectWiseSetDetails.Where(x => x.QuestionAnswerIds.Count() == 0 && x.QuestionAnswers.Count() == 0).Count();
+                                string versionVal= U.Normalize(quizInfo.Version);
+                                string subjectVal= U.Normalize(quizInfo.SubjectName);
+                                List<QuizAnswer> subjectWiseSubmittedSetDetails = quizInfo.quizAnswers.ToList();
+                                List<SubjectExpertQuestions> subjectWiseMasterSetDetails = masterQuizzes.Where(x => x.Version == versionVal && x.SubjectName == subjectVal).ToList();
+                                answersDetailedInfo.Version = versionVal;
+                                answersDetailedInfo.SubjectName = subjectVal;
+                                answersDetailedInfo.TotalQuestions = subjectWiseSubmittedSetDetails.Count();
+                                answersDetailedInfo.TotalAnsweredQuestions = subjectWiseSubmittedSetDetails.Where(x => x.QuestionAnswerIds.Count() > 0 && x.QuestionAnswers.Count() > 0).Count();
+                                answersDetailedInfo.TotalUnAnsweredQuestions = subjectWiseSubmittedSetDetails.Where(x => x.QuestionAnswerIds.Count() == 0 && x.QuestionAnswers.Count() == 0).Count();
                                 List<QuizAnswerTotalDetails> quizAnswerTotalDetails = new List<QuizAnswerTotalDetails>();
-                                foreach (QuizAnswer quizAnswer in subjectWiseSetDetails)
+                                foreach (QuizAnswer quizAnswer in subjectWiseSubmittedSetDetails)
                                 {
                                     QuizAnswerTotalDetails details = new QuizAnswerTotalDetails();
                                     details.QuestionId = quizAnswer.QuestionId;
@@ -741,10 +801,8 @@ namespace rmsapp.rmssysapi.Controllers
                                     details.SubmittedQuestionAnswerIds = quizAnswer.QuestionAnswerIds.OrderBy(x => x).ToArray();
                                     details.SubmittedQuestionAnswers = quizAnswer.QuestionAnswers;
 
-                                    details.MasterQuestionAnswerIds = masterQuizzes.Where(x => x.Version == quizInfo.Version && x.SubjectName == quizInfo.SubjectName
-                                           && x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswersIds).ToArray();
-                                    details.MasterQuestionAnswers = masterQuizzes.Where(x => x.Version == quizInfo.Version && x.SubjectName == quizInfo.SubjectName
-                                           && x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswers).ToArray();
+                                    details.MasterQuestionAnswerIds = subjectWiseMasterSetDetails.Where(x =>x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswersIds).ToArray();
+                                    details.MasterQuestionAnswers = subjectWiseMasterSetDetails.Where(x => x.QuestionType == quizAnswer.QuestionType && x.QuestionId == quizAnswer.QuestionId).SelectMany(x => x.QuestionAnswers).ToArray();
                                     details.IsCorrect = CheckArrayAnswers(details.MasterQuestionAnswerIds, details.SubmittedQuestionAnswerIds);
                                     quizAnswerTotalDetails.Add(details);
                                 }

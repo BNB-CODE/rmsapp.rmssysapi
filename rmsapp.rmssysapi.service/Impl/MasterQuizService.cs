@@ -305,24 +305,29 @@ namespace rmsapp.rmssysapi.service.Impl
 
         }
 
-        public async Task<IEnumerable<SubjectExpertQuestions>> GetMasterQuestionsBySearch(List<string> searcKeys)
+        public async Task<IEnumerable<SubjectDetails>> GetMasterQuestionsBySearch(List<string> searcKeys)
         {
             try
             {
                 var masterQuiz = await _masterQuizRepository.GetMultipleSetQuestionsList(searcKeys).ConfigureAwait(false);
-                var result = masterQuiz.Select(masterQuiz => new SubjectExpertQuestions
-                {
-                    QuestionId = masterQuiz.QuestionId,
-                    Version = masterQuiz.Version,
-                    SubjectName = masterQuiz.SubjectName,
-                    Question = masterQuiz.Question,
-                    QuestionType = masterQuiz.QuestionType,
-                    QuestionOptions = masterQuiz.QuestionOptions,
-                    QuestionAnswers = masterQuiz.QuestionAnswers,
-                    QuestionAnswersIds = masterQuiz.QuestionAnswersIds,
-                    Tag = masterQuiz.Tag
-                }).ToList();
-
+                var result = (from x in masterQuiz
+                              group x by new
+                              {
+                                  x.Version,
+                                  x.SubjectName,
+                                  x.Tag,
+                              } into g
+                              select new SubjectDetails
+                              {
+                                  Version = g.Key.Version,
+                                  SubjectName = g.Key.SubjectName,
+                                  Tag=g.Key.Tag,
+                                  TotalQuestionsCount = g.Count(),
+                                  CreatedBy = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName &&x.Tag==g.Key.Tag).Select(x => x.CreatedBy).FirstOrDefault(),
+                                  UpdatedBy = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName && x.Tag == g.Key.Tag).Select(x => x.UpdatedBy).LastOrDefault(),
+                                  CreatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName && x.Tag == g.Key.Tag).Select(x => x.CreatedDate).FirstOrDefault(),
+                                  UpdatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName && x.Tag == g.Key.Tag).Select(x => x.UpdatedDate).LastOrDefault(),
+                              }).ToList();
                 return result;
             }
             catch (NpgsqlException ex)
