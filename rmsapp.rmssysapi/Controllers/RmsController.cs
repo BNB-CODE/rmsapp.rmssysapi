@@ -308,7 +308,7 @@ namespace rmsapp.rmssysapi.Controllers
         #region Serach With Key Words
         [HttpPut("quiz/SubjectExpert/questions/filter")]
         [MapToApiVersion("1.0")]
-        [ProducesResponseType(200, Type = typeof(SubjectDetails[][]))]
+        [ProducesResponseType(200, Type = typeof(SubjectDetails[]))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         public async Task<IActionResult> GetFilteredSubjectExpertQuestions(string[] searchKeys)
