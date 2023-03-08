@@ -40,6 +40,7 @@ namespace rmsapp.rmssysapi.repository
             return result;
         }
         #endregion
+
         #region Update  Master Quiz
         public async Task<bool> Update(IEnumerable<MasterQuiz> masterQuiz)
         {

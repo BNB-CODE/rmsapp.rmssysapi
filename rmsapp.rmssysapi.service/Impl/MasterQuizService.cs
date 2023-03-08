@@ -208,18 +208,19 @@ namespace rmsapp.rmssysapi.service.Impl
                                group x by new
                                {
                                  x.Version,
-                                 x.SubjectName
+                                 x.SubjectName,
+                                 x.Tag
                                  } into g
                                  select new SubjectDetails
                                  {
                                      Version = g.Key.Version,
                                      SubjectName = g.Key.SubjectName,
-                                     Tag= masterQuiz.Select(x=>x.Tag).FirstOrDefault(),
+                                     Tag= g.Key.Tag,
                                      TotalQuestionsCount = g.Count(),
-                                     CreatedBy= masterQuiz.Where(x=>x.Version==g.Key.Version && x.SubjectName==g.Key.SubjectName).Select(x=>x.CreatedBy).FirstOrDefault(),
-                                     UpdatedBy = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedBy).LastOrDefault(),
-                                     CreatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.CreatedDate).FirstOrDefault(),
-                                     UpdatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName).Select(x => x.UpdatedDate).LastOrDefault(),
+                                     CreatedBy= masterQuiz.Where(x=>x.Version==g.Key.Version && x.SubjectName==g.Key.SubjectName && x.Tag== g.Key.Tag).Select(x=>x.CreatedBy).FirstOrDefault(),
+                                     UpdatedBy = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName && x.Tag == g.Key.Tag).Select(x => x.UpdatedBy).LastOrDefault(),
+                                     CreatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName && x.Tag == g.Key.Tag).Select(x => x.CreatedDate).FirstOrDefault(),
+                                     UpdatedDate = masterQuiz.Where(x => x.Version == g.Key.Version && x.SubjectName == g.Key.SubjectName && x.Tag == g.Key.Tag).Select(x => x.UpdatedDate).LastOrDefault(),
                                  }).ToList();
                 return result;
             }
