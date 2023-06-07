@@ -1,0 +1,50 @@
+{
+  "quizId": 1,
+  "totalQuestions": 3,
+  "answeredQuestions": 3,
+  "notAnsweredQuestions": 0,
+  "data": [
+    {
+      "subjectName": "java",
+      "version": "v1",
+      "quizAnswers": [
+        {
+          "questionId": 1,
+          "questionType": "SINGLECHOICE",
+          "questionAnswers": [
+              "Procedural"
+          ],
+          "questionAnswerIds": [
+            "C"
+          ]
+        }
+      ]
+    },
+        {
+      "subjectName": "react",
+      "version": "v1",
+      "quizAnswers": [
+        {
+          "questionId": 1,
+          "questionType": "SINGLECHOICE",
+          "questionAnswers": [
+          "Free and open-source JavaScript front-end library"
+          ],
+          "questionAnswerIds": [
+            "C"
+          ]
+        },
+           {
+          "questionId": 2,
+          "questionType": "SINGLECHOICE",
+          "questionAnswers": [
+            "Class"
+          ],
+          "questionAnswerIds": [
+            "A"
+          ]
+        }
+      ]
+    }
+  ]
+}

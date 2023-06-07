@@ -1,0 +1,38 @@
+[
+  {
+    "subjectName": "JAVA",
+    "setNumber": 1,
+    "totalQuestionsCount": 2,
+    "createdBy": null,
+    "updatedBy": null,
+    "createdDate": "2023-02-01T20:44:48.667664",
+    "updatedDate": null
+  },
+  {
+    "subjectName": "C#",
+    "setNumber": 1,
+    "totalQuestionsCount": 10,
+    "createdBy": null,
+    "updatedBy": null,
+    "createdDate": "2023-02-02T16:17:35.186154",
+    "updatedDate": null
+  },
+  {
+    "subjectName": "REACT",
+    "setNumber": 1,
+    "totalQuestionsCount": 10,
+    "createdBy": null,
+    "updatedBy": null,
+    "createdDate": "2023-02-02T16:19:07.305894",
+    "updatedDate": null
+  },
+  {
+    "subjectName": "REACT",
+    "setNumber": 2,
+    "totalQuestionsCount": 21,
+    "createdBy": null,
+    "updatedBy": null,
+    "createdDate": "2023-02-02T16:23:11.058706",
+    "updatedDate": null
+  }
+]

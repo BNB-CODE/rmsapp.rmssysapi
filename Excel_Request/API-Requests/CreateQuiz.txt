@@ -1,0 +1,22 @@
+{
+  "quizTopic": "Test Quiz For Submitt",
+  "totalQuestions": 3,
+  "quizTimeInMinutes": 10,
+  "quizLinkExpireInHours": 2,
+  "quizSetWiseInfo": [
+    {
+      "questionIds": [
+        1
+      ],
+      "version": "v1",
+      "subjectName": "java"
+    },
+{
+      "questionIds": [
+        1,2
+      ],
+      "version": "v1",
+      "subjectName": "react"
+    }
+  ]
+}

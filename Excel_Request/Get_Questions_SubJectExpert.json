@@ -1,0 +1,41 @@
+[
+  {
+    "questionId": 1,
+    "setId": 1,
+    "subject": "React",
+    "question": "Javascript is an _______ language?",
+    "questionType": "radio",
+    "questionOptions": [
+      "Object-Oriented",
+      "Object-Based",
+      "Procedural",
+      "None of the above"
+    ],
+    "questionAnswers": [
+      "Procedural"
+    ],
+    "questionAnswerIds": [
+      A
+    ]
+  }
+  {
+    "questionId": 2,
+    "setId": 1,
+    "subject": "React",
+    "question": "Javascript is an _______ language?",
+    "questionType": "radio",
+    "questionOptions": [
+      "Object-Oriented",
+      "Object-Based",
+      "Procedural",
+      "None of the above"
+    ],
+    "questionAnswers": [
+      "Procedural"
+    ],
+    "questionAnswerIds": [
+      "A"
+    ]
+  }
+
+]

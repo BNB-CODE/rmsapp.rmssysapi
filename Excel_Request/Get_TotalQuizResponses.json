@@ -1,0 +1,56 @@
+[
+  {
+    "quizId": 1,
+    "candidateId": null,
+    "quizCodeExpirationAt": "2023-02-10T15:16:11.943519",
+    "quizSubmittedAt": null,
+    "loginAttempts": 0,
+    "lastLoggedIn": null,
+    "url": "http://localhost:3000/rms-aug/test/1/_Q08COJ_phS7PPsbQyi6oniJscylGKBPb85bXuaxX0yYM1LYFDpAIva7NVF-FiqebxAbhOlJg6VSO8XET2RKWw!!"
+  },
+  {
+    "quizId": 2,
+    "candidateId": "BNB@GMAIL.COM",
+    "quizCodeExpirationAt": "2023-02-10T15:17:00.371658",
+    "quizSubmittedAt": "2023-02-10T13:20:47.363033",
+    "loginAttempts": 1,
+    "lastLoggedIn": "2023-02-10T13:20:47.363034",
+    "url": "http://localhost:3000/rms-aug/test/2/SXAYQujzWYNCZDfGQIYDsHKUTSRuvibP_KVDmSlh3S3q8zOA8hdcxCJkDHskFa9lg38bxtFWOAuA3TgxTXesXw!!"
+  },
+  {
+    "quizId": 3,
+    "candidateId": "TEST@GMAIL.COM",
+    "quizCodeExpirationAt": "2023-02-13T15:40:53.820918",
+    "quizSubmittedAt": "2023-02-13T13:41:55.332693",
+    "loginAttempts": 1,
+    "lastLoggedIn": "2023-02-13T13:41:55.332711",
+    "url": "http://localhost:3000/rms-aug/test/3/KiWmzOUtZjA_HYgkEO4jn2Cu8VNWr7_lZERqJ2jbFHydQLi5TPTwEz3ld3eD611nctLm9WJkEp5_xjEcJVPKtw!!"
+  },
+  {
+    "quizId": 4,
+    "candidateId": null,
+    "quizCodeExpirationAt": "2023-02-13T15:45:51.289266",
+    "quizSubmittedAt": null,
+    "loginAttempts": 0,
+    "lastLoggedIn": null,
+    "url": "http://localhost:3000/rms-aug/test/4/YoBmlCwc9_nMCiHjizJHTQJXdE11gn8xmzc9c6Hz4-RWLmmJNuCQMV3eWuiOqY9Jh70fVzSFqDAUnDqa2M_fTA!!"
+  },
+  {
+    "quizId": 5,
+    "candidateId": "TEST2@GMAIL.COM",
+    "quizCodeExpirationAt": "2023-02-13T15:50:26.458442",
+    "quizSubmittedAt": "2023-02-13T13:52:11.451334",
+    "loginAttempts": 1,
+    "lastLoggedIn": "2023-02-13T13:52:11.451335",
+    "url": "http://localhost:3000/rms-aug/test/5/-Y7zPQKCBn_P0laxDNRGBUq-kEr2Jj8hNHoRRdJ7nWJijGpkGpHBrEjHRPToXbk5drAdyiT2w7zk0f_SRVVnow!!"
+  },
+  {
+    "quizId": 6,
+    "candidateId": null,
+    "quizCodeExpirationAt": "2023-02-13T16:19:21.567381",
+    "quizSubmittedAt": null,
+    "loginAttempts": 0,
+    "lastLoggedIn": null,
+    "url": "http://localhost:3000/rms-aug/test/6/DlGkNhPirwM1u5rtATfEZBq6gnCpB8CA6nO2ZhyNiu4hipBzuQH4Fp7-mNXZMoz8MkxqYBnfIPsN_6LcPn1Zog!!"
+  }
+]

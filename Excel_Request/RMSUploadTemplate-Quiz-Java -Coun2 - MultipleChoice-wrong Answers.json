@@ -1,0 +1,23 @@
+{
+  "quizId": 1,
+  "data": [
+    {
+      "subjectName": "JAVA",
+      "setNumber": 1,
+      "quizAnswers": [
+        {
+          "questionId": 1,
+          "questionType": "SINGLECHOICE",
+          "questionAnswers": [ "Object-Oriented" ],
+          "questionAnswerIds": [ "A" ]
+        },
+        {
+          "questionId": 2,
+          "questionType": "MULTIPLECHOICE",
+          "questionAnswers": [ "var", "let" ],
+          "questionAnswerIds": [ "C", "D" ]
+        }
+      ]
+    }
+  ]
+}

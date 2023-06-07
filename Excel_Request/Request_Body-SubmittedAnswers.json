@@ -1,0 +1,41 @@
+{
+  "quizId": 1,
+  "data":[
+    {
+      "subjectName": "Java",
+      "setNumber": 1,
+      "submittedAnswers": [
+        {
+          "questionID": 1,
+          "answers": [ "Java", "None of the above" ],
+          "answerIds": [ "A", "C" ],
+          "questionType": "MULTIPLECHOICE"
+        },
+        {
+          "questionID": 2,
+          "answers": [ "None of the above" ],
+          "answerIds": [ "C" ],
+          "questionType": "SINGLECHOICE"
+        }
+      ]
+    },
+    {
+      "subjectName": "React",
+      "setNumber": 2,
+      "submittedAnswers": [
+        {
+          "questionID": 1,
+          "answers": [ "Java", "None of the above" ],
+          "answerIds": [ "A", "C" ],
+          "questionType": "MULTIPLECHOICE"
+        },
+        {
+          "questionID": 2,
+          "answers": [ "None of the above" ],
+          "answerIds": [ "C" ],
+          "questionType": "SINGLECHOICE"
+        }
+      ]
+    }
+  ]
+}
